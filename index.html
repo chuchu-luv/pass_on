@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>✨반짝반짝, 전문직 합격 기원!✨</title>
+<style>
+  @font-face { 
+    font-family: 'OmuDaye';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2304-01@1.0/omyu_pretty.woff2') format('woff2');
+    font-weight: normal;
+    font-display: swap;
+  }
+  :root {
+    --bg:#fffafa; --card:#ffffff; --ink:#201b35; --muted:#706b83;
+    --primary:#7c61ff; --line:#e8e1f5;
+    --topic:#7c61ff; --topicSoft:#f0ebff; --topicLine:#ded2ff;
+    --ok:#229a68; --bad:#df4b4b;
+  }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body {
+    margin:0; font-family:'OmuDaye', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background:
+      radial-gradient(circle at 8% 0%, #fff2c9 0, transparent 28%),
+      radial-gradient(circle at 98% 10%, #e9f3ff 0, transparent 26%),
+      var(--bg);
+    color:var(--ink); font-size:18px;
+  }
+  .app { max-width:1120px; margin:0 auto; padding:18px 16px 90px; }
+  .view { display:none; }
+  .view.active { display:block; }
+  .top { display:flex; gap:12px; align-items:flex-start; justify-content:space-between; margin-bottom:14px; }
+  h1 { font-size:30px; margin:0; letter-spacing:-.4px; color:#453071; line-height:1.15; }
+  h2 { font-size:23px; margin:8px 0; line-height:1.2; }
+  .sub { color:var(--muted); font-size:16px; margin-top:6px; line-height:1.35; }
+  .btns { display:flex; gap:8px; flex-wrap:wrap; }
+  .home-actions { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px; margin:16px 0 16px; max-width:980px; }
+  .home-actions button { width:100%; min-height:62px; font-size:22px; }
+  button {
+    border:0; border-radius:18px; padding:10px 14px; font-size:17px; font-family:'OmuDaye', sans-serif;
+    font-weight:900; cursor:pointer; background:var(--topicSoft); color:var(--topic);
+    box-shadow:0 3px 10px rgba(79,61,180,.08); transition:transform .16s ease, box-shadow .16s ease, filter .16s ease;
+  }
+  button:hover { transform:translateY(-2px) scale(1.02); box-shadow:0 10px 22px rgba(79,61,180,.16); filter:saturate(1.04); }
+  button.primary { background:linear-gradient(135deg, #a98bff, #f6a4d8); color:#fff; }
+  button.soft-blue { background:linear-gradient(135deg, #eef6ff, #dcecff); color:#3570c9; border:1px solid #cddfff; }
+  button.soft-mint { background:linear-gradient(135deg, #e7fff4, #d8f7ee); color:#2f8069; border:1px solid #b9ecdc; }
+  button.soft-lavender { background:linear-gradient(135deg, #f5f1ff, #e9e4ff); color:#6250bc; border:1px solid #dcd4ff; }
+  button.soft-green { background:linear-gradient(135deg, #f7ffe8, #e6f9d9); color:#447c38; border:1px solid #d6edbd; }
+  button.ghost { background:#fff; color:var(--muted); border:1px solid var(--line); box-shadow:none; }
+  button.warn { background:#fff0f0; color:var(--bad); }
+  button.good { background:#eaf8f1; color:var(--ok); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px; }
+  .card { background:rgba(255,255,255,.94); border:1px solid var(--topicLine); border-radius:24px; padding:16px; box-shadow:0 10px 24px rgba(65,56,110,.08); }
+  .topic-card { min-height:140px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; transition:.16s transform, .16s box-shadow; }
+  .topic-card:hover { transform:translateY(-2px); box-shadow:0 14px 28px rgba(65,56,110,.12); }
+  .num { width:32px; height:32px; display:inline-grid; place-items:center; background:var(--topicSoft); color:var(--topic); border-radius:12px; font-weight:900; }
+  .topic-title { font-size:18px; font-weight:900; line-height:1.18; margin:10px 0; letter-spacing:-.2px; word-break:keep-all; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .chips { display:flex; gap:5px; flex-wrap:wrap; }
+  .chip { background:var(--topicSoft); color:var(--topic); padding:5px 8px; border-radius:999px; font-size:13px; font-weight:800; line-height:1; }
+  .section-box { background:#fff; border:1px solid var(--topicLine); border-radius:20px; padding:12px; box-shadow:0 8px 20px rgba(65,56,110,.07); margin-top:10px; }
+  .pill-title { font-size:16px; color:var(--topic); margin-bottom:8px; font-weight:900; }
+  .content { font-size:21px; line-height:1.68; white-space:pre-line; word-break:keep-all; }
+  .content.keywords { font-size:18px; line-height:1.8; }
+  .kw { font-weight:900; color:#3d2b83; background:linear-gradient(transparent 58%, var(--topicSoft) 58%); border-radius:4px; padding:0 2px; }
+  .meta-grid { display:grid; gap:9px; }
+  .meta-card { border:1px solid var(--topicLine); border-radius:16px; padding:11px 12px; background:#fff; }
+  .meta-title { display:inline-block; padding:5px 10px; border-radius:999px; font-size:15px; font-weight:900; margin-bottom:6px; }
+  .meta-title.evidence { background:#eef4ff; color:#2f80ed; }
+  .meta-title.law { background:#fff0f6; color:#c43b75; }
+  .meta-title.purpose { background:#eafaf0; color:#16804a; }
+  .meta-title.principle { background:#fff7df; color:#b36b00; }
+  .meta-title.expected { background:#f0ebff; color:#6d4ee8; }
+  .meta-title.memo { background:#fff6e9; color:#bd6b12; }
+  .meta-card ul { margin:4px 0 0 18px; padding:0; }
+  .meta-card li { margin:3px 0; line-height:1.45; }
+  .small { color:var(--muted); font-size:15px; line-height:1.45; }
+  .stat { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0 12px; }
+  .stat span { background:#fff; border:1px solid var(--line); border-radius:999px; padding:7px 10px; font-size:15px; font-weight:800; }
+  .hint { font-size:32px; font-weight:900; letter-spacing:2px; text-align:center; background:#fff9e8; border:1px dashed #ffc44f; padding:18px; border-radius:22px; word-break:keep-all; }
+  input { width:100%; padding:14px 16px; border-radius:16px; border:1px solid var(--line); font-size:19px; outline:none; background:#fff; font-family:'OmuDaye', sans-serif; }
+  .answer { background:#f6fff9; border:1px solid #bfe8d3; color:#176a47; padding:14px; border-radius:18px; line-height:1.65; font-size:18px; }
+  .hidden { display:none !important; }
+  .wrong-item { border-left:5px solid var(--bad); }
+  .plan-section { border:1px solid var(--topicLine); border-radius:18px; background:#fff; padding:13px 14px; margin:10px 0; }
+  .plan-section-title { font-size:19px; font-weight:900; line-height:1.25; margin-bottom:8px; word-break:keep-all; }
+  .plan-item { display:grid; grid-template-columns:82px 1fr; gap:8px; align-items:start; padding:3px 0; line-height:1.45; }
+  .plan-code { font-weight:900; color:var(--topic); }
+  .loading { padding:18px; background:#fff; border:1px solid var(--line); border-radius:20px; color:var(--muted); }
+  .mobile-break { display:none; }
+  @media (max-width: 760px) {
+    body { font-size:17px; }
+    .app { padding:14px 12px 80px; }
+    .top { display:block; }
+    .top .btns { margin-top:10px; }
+    h1 { font-size:28px; }
+    h2 { font-size:20px; }
+    .sub { font-size:14px; }
+    .mobile-break { display:block; }
+    .home-actions { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
+    .home-actions button { min-height:56px; font-size:18px; padding:9px 10px; }
+    .grid { grid-template-columns:1fr; gap:10px; }
+    .card { border-radius:20px; padding:14px; }
+    .topic-card { min-height:116px; }
+    .topic-title { font-size:16px; margin:8px 0; }
+    .chip { font-size:11px; padding:4px 7px; max-width:31%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    button { font-size:15px; padding:9px 12px; border-radius:14px; }
+    .content { font-size:18px; line-height:1.62; }
+    .content.keywords { font-size:16px; }
+    .hint { font-size:26px; padding:14px; }
+    .plan-item { grid-template-columns:68px 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="home" class="view active">
+    <div class="top">
+      <div>
+        <h1>✨반짝반짝,<br class="mobile-break"> 전문직 합격 기원!✨</h1>
+        <div class="sub">🍀주제를 고른 뒤 확인하세요. 합격합시다.⭐</div>
+      </div>
+    </div>
+
+    <div class="home-actions">
+      <button class="primary" onclick="openQuiz(false)">📝 퀴즈 모드</button>
+      <button class="soft-blue" onclick="openWrong()">📌 오답노트</button>
+      <button class="soft-green" onclick="openGovTasks()">📘 국정과제 보기</button>
+      <button class="soft-mint" onclick="openWorkPlan()">🌿 주요업무계획 목차보기</button>
+      <button class="soft-lavender" onclick="openFuture2030()">🌈 2030 미래교육</button>
+    </div>
+
+    <div class="stat" id="homeStat"></div>
+    <div id="homeMemo"></div>
+    <div id="loading" class="loading">구글시트 데이터를 불러오는 중입니다...</div>
+    <div class="grid" id="topicGrid"></div>
+  </div>
+
+  <div id="detail" class="view">
+    <div class="top">
+      <div>
+        <button class="ghost" onclick="showView('home')">← 첫페이지</button>
+        <h2 id="detailTitle"></h2>
+        <div class="sub">버튼을 눌러 필요한 부분만 펼쳐 보세요.</div>
+      </div>
+    </div>
+    <div class="btns" id="detailButtons"></div>
+    <div class="section-box">
+      <div class="pill-title" id="sectionTitle">서론</div>
+      <div class="content" id="sectionContent"></div>
+    </div>
+  </div>
+
+  <div id="quiz" class="view">
+    <div class="top">
+      <div>
+        <button class="ghost" onclick="showView('home')">← 첫페이지</button>
+        <h2 id="quizTitle">키워드 초성 퀴즈</h2>
+        <div class="sub">초성을 보고 핵심 키워드를 떠올려 보세요. 틀린 것은 오답노트에 저장됩니다.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="small" id="quizTopic"></div>
+      <div class="hint" id="quizHint"></div>
+    </div>
+    <br>
+    <input id="quizInput" placeholder="떠오르는 키워드를 입력하세요" onkeydown="if(event.key==='Enter')checkAnswer()" />
+    <br><br>
+    <div class="btns">
+      <button class="primary" onclick="checkAnswer()">정답 확인</button>
+      <button class="ghost" onclick="showAnswer()">답 보기</button>
+      <button class="warn" onclick="markWrong()">틀렸어요</button>
+      <button class="good" onclick="nextQuiz()">다음 문제</button>
+    </div>
+    <div id="quizResult" class="answer hidden"></div>
+  </div>
+
+  <div id="wrong" class="view">
+    <div class="top">
+      <div>
+        <button class="ghost" onclick="showView('home')">← 첫페이지</button>
+        <h2>오답노트</h2>
+        <div class="sub">틀린 키워드만 다시 볼 수 있습니다. 브라우저에 자동 저장됩니다.</div>
+      </div>
+      <div class="btns">
+        <button class="primary" onclick="openQuiz(true)">오답만 퀴즈</button>
+        <button class="warn" onclick="clearWrong()">오답노트 비우기</button>
+      </div>
+    </div>
+    <div id="wrongList" class="grid"></div>
+  </div>
+
+  <div id="workPlan" class="view">
+    <div class="top"><div>
+      <button class="ghost" onclick="showView('home')">← 첫페이지</button>
+      <h2>주요업무계획 목차보기</h2>
+      <div class="sub">구글시트 workPlan 탭의 내용을 보여줍니다.</div>
+    </div></div>
+    <div id="workPlanContent"></div>
+  </div>
+
+  <div id="govTasks" class="view">
+    <div class="top"><div>
+      <button class="ghost" onclick="showView('home')">← 첫페이지</button>
+      <h2>국정과제 보기</h2>
+      <div class="sub">구글시트 govTasks 탭의 내용을 보여줍니다.</div>
+    </div></div>
+    <div id="govTasksContent"></div>
+  </div>
+
+  <div id="future2030" class="view">
+    <div class="top"><div>
+      <button class="ghost" onclick="showView('home')">← 첫페이지</button>
+      <h2>2030 미래교육</h2>
+      <div class="sub">구글시트 future2030 탭의 내용을 보여줍니다.</div>
+    </div></div>
+    <div id="future2030Content"></div>
+  </div>
+</div>
+
+<script>
+/*
+  1) Apps Script 배포 URL을 아래에 붙여넣으세요.
+  예: const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyOEuix-f4oLTgnDYXkOoBNjce_evcarE1vL197fUGZjj4iWb7W01IidoRf12zcoP5f/exec';
+*/
+const WEB_APP_URL = '여기에_Apps_Script_웹앱_URL_붙여넣기';
+
+const BASE_SECTIONS = [
+  ['intro', '서론'],
+  ['problem', '핵심 문제'],
+  ['keywords', '키워드'],
+  ['s1', '1. 지원체계 구축'],
+  ['s2', '2. 교육과정·수업·평가 지원'],
+  ['s3', '3. 교원 역량 강화'],
+  ['s4', '4. 학생 맞춤 성장 지원'],
+  ['s5', '5. 지역 협력 및 환류'],
+  ['kick', '나만의 성공전략'],
+  ['meta', '근거·목적·방침·기대효과']
+];
+
+const TOPIC_COLORS = [
+  ['#7c61ff','#f0ebff','#ded2ff'], ['#2f80ed','#eef4ff','#cddfff'], ['#00a36c','#e9fff5','#bff0dc'],
+  ['#f28c28','#fff2df','#ffd7a8'], ['#d45fa6','#fff0f8','#ffd3eb'], ['#18a2a8','#e9fcff','#bdeff2'],
+  ['#9b6bff','#f5efff','#ded0ff'], ['#ff7c7c','#fff0f0','#ffd1d1'], ['#5978e8','#eef2ff','#d2dcff'],
+  ['#e05d8a','#fff0f5','#ffcddd'], ['#4e8b59','#f0fff2','#ccefd2'], ['#c27a00','#fff8e6','#ffe3a6'],
+  ['#28a745','#efffed','#c9f2c4'], ['#6060c8','#f0f0ff','#d4d4ff'], ['#777777','#f7f7f7','#dddddd'],
+  ['#009688','#e8fff9','#b7efe4'], ['#ff9f43','#fff4e7','#ffd9af'], ['#5f9ea0','#ecfbfb','#c9eeee'], ['#b05fc8','#fbf0ff','#e9ccf2']
+];
+
+let DB = {
+  topics: [], topicExtraSections: [], quizKeywords: [], workPlan: [], govTasks: [], future2030: [], pageMemos: []
+};
+let currentTopic = null;
+let currentQuiz = null;
+let quizPool = [];
+let quizWrongOnly = false;
+
+async function loadFromSheet() {
+  if (!WEB_APP_URL || WEB_APP_URL.includes('여기에_')) {
+    document.getElementById('loading').innerHTML = 'HTML 코드의 <b>WEB_APP_URL</b>에 Apps Script 웹앱 URL을 먼저 넣어주세요.';
+    return;
+  }
+  try {
+    const res = await fetch(WEB_APP_URL + '?v=' + Date.now());
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    DB = normalizeData(data);
+    localStorage.setItem('memoryAppCache', JSON.stringify(DB));
+    renderHome();
+  } catch (err) {
+    const cached = localStorage.getItem('memoryAppCache');
+    if (cached) {
+      DB = JSON.parse(cached);
+      renderHome();
+      document.getElementById('loading').innerHTML = '구글시트 연결에 실패해서 마지막 저장 데이터를 불러왔습니다.';
+    } else {
+      document.getElementById('loading').innerHTML = '데이터를 불러오지 못했습니다. Apps Script 배포 URL과 권한을 확인하세요.<br>' + escapeHtml(String(err));
+    }
+  }
+}
+
+function normalizeData(data) {
+  const db = {};
+  ['topics','topicExtraSections','quizKeywords','workPlan','govTasks','future2030','pageMemos'].forEach(k => db[k] = data[k] || []);
+  db.topics = db.topics.map((t, idx) => ({...t, no: Number(t.no || idx + 1)})).sort((a,b) => a.no - b.no);
+  return db;
+}
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'home') renderHomeStat();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function renderHome() {
+  document.getElementById('loading').style.display = 'none';
+  renderHomeStat();
+  document.getElementById('homeMemo').innerHTML = renderPageMemo('home');
+  const grid = document.getElementById('topicGrid');
+  grid.innerHTML = DB.topics.map((t, i) => {
+    const c = TOPIC_COLORS[i % TOPIC_COLORS.length];
+    const chips = splitList(t.keywords).slice(0,3).map(k => `<span class="chip">${escapeHtml(k)}</span>`).join('');
+    return `<div class="card topic-card" onclick="openDetail(${t.no})" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+      <div><span class="num">${t.no}</span><div class="topic-title" title="${escapeHtml(t.topic)}">${escapeHtml(t.topic)}</div></div>
+      <div class="chips">${chips}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderHomeStat() {
+  const wrong = getWrong();
+  document.getElementById('homeStat').innerHTML = `<span>오답 키워드 ${wrong.length}개</span>`;
+}
+
+function openDetail(no) {
+  currentTopic = DB.topics.find(t => Number(t.no) === Number(no));
+  if (!currentTopic) return;
+  const idx = DB.topics.findIndex(t => Number(t.no) === Number(no));
+  const c = TOPIC_COLORS[idx % TOPIC_COLORS.length];
+  document.documentElement.style.setProperty('--topic', c[0]);
+  document.documentElement.style.setProperty('--topicSoft', c[1]);
+  document.documentElement.style.setProperty('--topicLine', c[2]);
+  document.getElementById('detailTitle').textContent = `${currentTopic.no}. ${currentTopic.topic}`;
+
+  const extras = getExtras(currentTopic.no);
+  const sections = [...BASE_SECTIONS];
+  extras.forEach((e, i) => sections.push([`extra:${i}`, e.sectionTitle || e.title || `추가자료 ${i+1}`]));
+  if (currentTopic.memo) sections.push(['topicMemo', '메모']);
+
+  document.getElementById('detailButtons').innerHTML = sections.map(([key,label]) => `<button onclick="showSection('${key.replace(/'/g, "\\'")}')">${escapeHtml(label)}</button>`).join('');
+  showView('detail');
+  showSection('intro');
+}
+
+function showSection(key) {
+  if (!currentTopic) return;
+  let title = '';
+  let html = '';
+  const extras = getExtras(currentTopic.no);
+
+  if (key === 'meta') {
+    title = '근거·목적·방침·기대효과';
+    html = renderMeta(currentTopic);
+    document.getElementById('sectionContent').className = 'content';
+  } else if (key === 'topicMemo') {
+    title = '메모';
+    html = renderMemoText(currentTopic.memo);
+    document.getElementById('sectionContent').className = 'content';
+  } else if (key.startsWith('extra:')) {
+    const idx = Number(key.split(':')[1]);
+    const e = extras[idx];
+    title = e.sectionTitle || e.title || '추가자료';
+    html = `<div>${highlightKeywords(e.content || '', currentTopic.keywords)}</div>` + (e.memo ? renderMemoText(e.memo) : '');
+    document.getElementById('sectionContent').className = 'content';
+  } else {
+    const found = BASE_SECTIONS.find(s => s[0] === key);
+    title = found ? found[1] : key;
+    const value = currentTopic[key] || '';
+    if (key === 'keywords') {
+      html = splitList(value).map(k => `<span class="chip">${escapeHtml(k)}</span>`).join(' ');
+      document.getElementById('sectionContent').className = 'content keywords';
+    } else {
+      html = highlightKeywords(value, currentTopic.keywords);
+      document.getElementById('sectionContent').className = 'content';
+    }
+  }
+  document.getElementById('sectionTitle').textContent = title;
+  document.getElementById('sectionContent').innerHTML = html || '<span class="small">입력된 내용이 없습니다.</span>';
+}
+
+function getExtras(topicNo) {
+  return DB.topicExtraSections.filter(e => String(e.topicNo) === String(topicNo));
+}
+
+function renderMeta(t) {
+  return `<div class="meta-grid">
+    ${metaCard('evidence','정책 근거 및 참고 자료', t.evidence)}
+    ${metaCard('law','관련 법령', t.laws)}
+    ${metaCard('purpose','목적', t.purpose)}
+    ${metaCard('principle','방침', t.principles)}
+    ${metaCard('expected','기대효과', t.expected)}
+    ${t.memo ? metaCard('memo','메모', t.memo) : ''}
+  </div>`;
+}
+
+function metaCard(cls, title, value) {
+  if (!value) return '';
+  const items = splitLines(value);
+  const body = items.length > 1 ? `<ul>${items.map(x => `<li>${highlightKeywords(x, currentTopic ? currentTopic.keywords : '')}</li>`).join('')}</ul>` : `<p>${highlightKeywords(value, currentTopic ? currentTopic.keywords : '')}</p>`;
+  return `<div class="meta-card"><span class="meta-title ${cls}">${escapeHtml(title)}</span>${body}</div>`;
+}
+
+function renderMemoText(text) {
+  if (!text) return '';
+  return `<div class="meta-card"><span class="meta-title memo">메모</span><p>${escapeHtml(text).replace(/\n/g,'<br>')}</p></div>`;
+}
+
+function renderPageMemo(pageKey) {
+  const m = DB.pageMemos.find(x => String(x.pageKey || x.page || '').trim() === pageKey);
+  return m && m.memo ? `<div class="section-box"><div class="pill-title">메모</div><div class="small">${escapeHtml(m.memo).replace(/\n/g,'<br>')}</div></div>` : '';
+}
+
+function openQuiz(wrongOnly) {
+  quizWrongOnly = wrongOnly;
+  const wrong = getWrong();
+  if (wrongOnly && wrong.length === 0) { alert('오답노트가 비어 있습니다.'); return; }
+  quizPool = wrongOnly ? wrong : buildQuizPool();
+  if (quizPool.length === 0) { alert('퀴즈 데이터가 없습니다. quizKeywords 탭 또는 topics 키워드를 확인하세요.'); return; }
+  showView('quiz');
+  nextQuiz();
+}
+
+function buildQuizPool() {
+  if (DB.quizKeywords.length) {
+    return DB.quizKeywords.map(q => ({
+      topicNo: q.topicNo,
+      topic: q.topic || getTopicTitle(q.topicNo),
+      answer: q.keyword || q.answer,
+      hint: q.hint || chosung(q.keyword || q.answer || '')
+    })).filter(q => q.answer);
+  }
+  const pool = [];
+  DB.topics.forEach(t => splitList(t.keywords).forEach(k => pool.push({topicNo:t.no, topic:t.topic, answer:k, hint:chosung(k)})));
+  return pool;
+}
+
+function nextQuiz() {
+  if (!quizPool.length) return;
+  currentQuiz = quizPool[Math.floor(Math.random() * quizPool.length)];
+  document.getElementById('quizTopic').textContent = currentQuiz.topic ? `주제: ${currentQuiz.topic}` : '';
+  document.getElementById('quizHint').textContent = currentQuiz.hint || chosung(currentQuiz.answer);
+  document.getElementById('quizInput').value = '';
+  document.getElementById('quizResult').classList.add('hidden');
+  document.getElementById('quizResult').innerHTML = '';
+  setTimeout(() => document.getElementById('quizInput').focus(), 50);
+}
+
+function checkAnswer() {
+  if (!currentQuiz) return;
+  const input = normalizeAnswer(document.getElementById('quizInput').value);
+  const answer = normalizeAnswer(currentQuiz.answer);
+  const result = document.getElementById('quizResult');
+  result.classList.remove('hidden');
+  if (input && (input === answer || answer.includes(input) || input.includes(answer))) {
+    result.innerHTML = `정답입니다!<br>정답: ${escapeHtml(currentQuiz.answer)}`;
+    removeWrong(currentQuiz.answer);
+  } else {
+    result.innerHTML = `아쉬워요.<br>정답: ${escapeHtml(currentQuiz.answer)}`;
+    addWrong(currentQuiz);
+  }
+  renderHomeStat();
+}
+
+function showAnswer() {
+  if (!currentQuiz) return;
+  const result = document.getElementById('quizResult');
+  result.classList.remove('hidden');
+  result.innerHTML = `정답: ${escapeHtml(currentQuiz.answer)}`;
+}
+
+function markWrong() {
+  if (!currentQuiz) return;
+  addWrong(currentQuiz);
+  const result = document.getElementById('quizResult');
+  result.classList.remove('hidden');
+  result.innerHTML = `오답노트에 저장했습니다.<br>정답: ${escapeHtml(currentQuiz.answer)}`;
+  renderHomeStat();
+}
+
+function openWrong() {
+  renderWrongList();
+  showView('wrong');
+}
+
+function renderWrongList() {
+  const wrong = getWrong();
+  const list = document.getElementById('wrongList');
+  if (!wrong.length) { list.innerHTML = '<div class="card">오답 키워드가 없습니다.</div>'; return; }
+  list.innerHTML = wrong.map((w, i) => `<div class="card wrong-item">
+    <div class="topic-title">${escapeHtml(w.answer)}</div>
+    <div class="small">${escapeHtml(w.topic || '')}</div>
+    <div class="small">힌트: ${escapeHtml(w.hint || chosung(w.answer))}</div><br>
+    <button class="ghost" onclick="deleteWrong(${i})">삭제</button>
+  </div>`).join('');
+}
+
+function getWrong() { return JSON.parse(localStorage.getItem('memoryWrongKeywords') || '[]'); }
+function saveWrong(list) { localStorage.setItem('memoryWrongKeywords', JSON.stringify(list)); }
+function addWrong(q) {
+  const list = getWrong();
+  if (!list.some(x => normalizeAnswer(x.answer) === normalizeAnswer(q.answer))) {
+    list.push({topicNo:q.topicNo, topic:q.topic, answer:q.answer, hint:q.hint || chosung(q.answer)});
+    saveWrong(list);
+  }
+}
+function removeWrong(answer) { saveWrong(getWrong().filter(x => normalizeAnswer(x.answer) !== normalizeAnswer(answer))); }
+function deleteWrong(i) { const list = getWrong(); list.splice(i,1); saveWrong(list); renderWrongList(); renderHomeStat(); }
+function clearWrong() { if(confirm('오답노트를 모두 비울까요?')) { saveWrong([]); renderWrongList(); renderHomeStat(); } }
+
+function openWorkPlan() {
+  showView('workPlan');
+  document.getElementById('workPlanContent').innerHTML = renderGroupedRows(DB.workPlan, 'policy', 'sectionNo', 'sectionTitle', 'itemNo', 'itemTitle', 'memo');
+}
+
+function openGovTasks() {
+  showView('govTasks');
+  document.getElementById('govTasksContent').innerHTML = renderGovTasks();
+}
+
+function renderGovTasks() {
+  const groups = groupBy(DB.govTasks, r => `${r.taskNo || ''} ${r.title || ''}`.trim());
+  return Object.entries(groups).map(([title, rows]) => `<div class="plan-section">
+    <div class="plan-section-title">${escapeHtml(title)}</div>
+    ${rows.map(r => `<div class="plan-item"><div class="plan-code">${escapeHtml(r.subNo || '')}</div><div>${escapeHtml(r.subTitle || '')}<div class="small">${escapeHtml(r.summary || '')}</div>${r.relatedTopics ? `<div class="small">연결 주제: ${escapeHtml(r.relatedTopics)}</div>` : ''}${r.memo ? `<div class="small">메모: ${escapeHtml(r.memo)}</div>` : ''}</div></div>`).join('')}
+  </div>`).join('') || '<div class="card">국정과제 데이터가 없습니다.</div>';
+}
+
+function openFuture2030() {
+  showView('future2030');
+  const groups = groupBy(DB.future2030, r => r.category || '기타');
+  document.getElementById('future2030Content').innerHTML = Object.entries(groups).map(([cat, rows]) => `<div class="plan-section">
+    <div class="plan-section-title">${escapeHtml(cat)}</div>
+    ${rows.map(r => `<div class="meta-card"><span class="meta-title purpose">${escapeHtml(r.title || '')}</span><p>${escapeHtml(r.content || '').replace(/\n/g,'<br>')}</p>${r.memo ? renderMemoText(r.memo) : ''}</div>`).join('')}
+  </div>`).join('') || '<div class="card">2030 미래교육 데이터가 없습니다.</div>';
+}
+
+function renderGroupedRows(rows, groupKey, sectionNoKey, sectionTitleKey, itemNoKey, itemTitleKey, memoKey) {
+  if (!rows.length) return '<div class="card">데이터가 없습니다.</div>';
+  const groups = groupBy(rows, r => r[groupKey] || '기타');
+  return Object.entries(groups).map(([group, groupRows]) => `<div class="plan-section">
+    <div class="plan-section-title">${escapeHtml(group)}</div>
+    ${groupRows.map(r => `<div class="plan-item"><div class="plan-code">${escapeHtml(r[itemNoKey] || r[sectionNoKey] || '')}</div><div>${escapeHtml(r[itemTitleKey] || r[sectionTitleKey] || '')}${r[memoKey] ? `<div class="small">메모: ${escapeHtml(r[memoKey])}</div>` : ''}</div></div>`).join('')}
+  </div>`).join('');
+}
+
+function getTopicTitle(no) { const t = DB.topics.find(x => String(x.no) === String(no)); return t ? t.topic : ''; }
+function splitList(text) { return String(text || '').split(/,|，|\n|;/).map(s => s.trim()).filter(Boolean); }
+function splitLines(text) { return String(text || '').split(/\n|\r\n|;/).map(s => s.replace(/^[-•·○▪\s]+/, '').trim()).filter(Boolean); }
+function normalizeAnswer(s) { return String(s || '').replace(/\s+/g,'').replace(/[·ㆍ・\-]/g,'').toLowerCase(); }
+function groupBy(arr, fn) { return arr.reduce((acc, x) => { const k = fn(x) || '기타'; (acc[k] ||= []).push(x); return acc; }, {}); }
+function escapeHtml(s) { return String(s || '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function highlightKeywords(text, keywords) {
+  let html = escapeHtml(text).replace(/\n/g, '<br>');
+  splitList(keywords).sort((a,b) => b.length - a.length).forEach(k => {
+    if (k.length < 2) return;
+    const safe = escapeHtml(k).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    html = html.replace(new RegExp(safe, 'g'), `<span class="kw">${escapeHtml(k)}</span>`);
+  });
+  return html;
+}
+function chosung(str) {
+  const CHO = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+  return String(str || '').split('').map(ch => {
+    const code = ch.charCodeAt(0) - 44032;
+    if (code >= 0 && code <= 11171) return CHO[Math.floor(code / 588)];
+    if (/\s/.test(ch)) return ' ';
+    return ch;
+  }).join('');
+}
+
+loadFromSheet();
+</script>
+</body>
+</html>
