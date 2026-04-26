@@ -18,16 +18,18 @@
     --ok:#229a68; --bad:#df4b4b;
   }
   * { box-sizing:border-box; }
-  html { -webkit-text-size-adjust:100%; }
+  html { -webkit-text-size-adjust:100%; min-height:100%; }
   body {
+    min-height:100vh;
     margin:0; font-family:'OmuDaye', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     background:
       radial-gradient(circle at 8% 0%, #fff2c9 0, transparent 28%),
       radial-gradient(circle at 98% 10%, #e9f3ff 0, transparent 26%),
       var(--bg);
+    background-attachment:fixed;
     color:var(--ink); font-size:18px;
   }
-  .app { max-width:1120px; margin:0 auto; padding:18px 16px 90px; }
+  .app { max-width:1120px; min-height:100vh; margin:0 auto; padding:18px 16px 120px; }
   .view { display:none; }
   .view.active { display:block; }
   .top { display:flex; gap:12px; align-items:flex-start; justify-content:space-between; margin-bottom:14px; }
@@ -35,19 +37,19 @@
   h2 { font-size:23px; margin:8px 0; line-height:1.2; }
   .sub { color:var(--muted); font-size:16px; margin-top:6px; line-height:1.35; }
   .btns { display:flex; gap:8px; flex-wrap:wrap; }
-  .home-actions { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px; margin:16px 0 16px; max-width:980px; }
-  .home-actions button { width:100%; min-height:62px; font-size:22px; }
+  .home-actions { display:flex; gap:8px; flex-wrap:wrap; margin:0; align-items:center; justify-content:flex-end; max-width:470px; }
+  .home-actions button { width:auto; min-height:auto; font-size:15px; padding:9px 13px; border-radius:16px; }
   button {
     border:0; border-radius:18px; padding:10px 14px; font-size:17px; font-family:'OmuDaye', sans-serif;
     font-weight:900; cursor:pointer; background:var(--topicSoft); color:var(--topic);
     box-shadow:0 3px 10px rgba(79,61,180,.08); transition:transform .16s ease, box-shadow .16s ease, filter .16s ease;
   }
   button:hover { transform:translateY(-2px) scale(1.02); box-shadow:0 10px 22px rgba(79,61,180,.16); filter:saturate(1.04); }
-  button.primary { background:linear-gradient(135deg, #a98bff, #f6a4d8); color:#fff; }
-  button.soft-blue { background:linear-gradient(135deg, #eef6ff, #dcecff); color:#3570c9; border:1px solid #cddfff; }
-  button.soft-mint { background:linear-gradient(135deg, #e7fff4, #d8f7ee); color:#2f8069; border:1px solid #b9ecdc; }
-  button.soft-lavender { background:linear-gradient(135deg, #f5f1ff, #e9e4ff); color:#6250bc; border:1px solid #dcd4ff; }
-  button.soft-green { background:linear-gradient(135deg, #f7ffe8, #e6f9d9); color:#447c38; border:1px solid #d6edbd; }
+  button.primary { background:linear-gradient(135deg, #bfa8ff, #f7afd9); color:#fff; border:1px solid #e6d8ff; }
+  button.soft-blue { background:linear-gradient(135deg, #f3f8ff, #dcecff); color:#3570c9; border:1px solid #cddfff; }
+  button.soft-mint { background:linear-gradient(135deg, #edfff8, #d5f6ee); color:#2f8069; border:1px solid #b9ecdc; }
+  button.soft-lavender { background:linear-gradient(135deg, #f8f4ff, #e9e4ff); color:#6250bc; border:1px solid #dcd4ff; }
+  button.soft-green { background:linear-gradient(135deg, #fbfff0, #e7f8d8); color:#447c38; border:1px solid #d6edbd; }
   button.ghost { background:#fff; color:var(--muted); border:1px solid var(--line); box-shadow:none; }
   button.warn { background:#fff0f0; color:var(--bad); }
   button.good { background:#eaf8f1; color:var(--ok); }
@@ -83,11 +85,20 @@
   .answer { background:#f6fff9; border:1px solid #bfe8d3; color:#176a47; padding:14px; border-radius:18px; line-height:1.65; font-size:18px; }
   .hidden { display:none !important; }
   .wrong-item { border-left:5px solid var(--bad); }
-  .plan-section { border:1px solid var(--topicLine); border-radius:18px; background:#fff; padding:13px 14px; margin:10px 0; }
+  .plan-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:12px; margin-top:12px; }
+  .plan-card { cursor:pointer; border-radius:22px; min-height:120px; border:1px solid var(--topicLine); background:#fff; padding:16px; box-shadow:0 8px 20px rgba(65,56,110,.07); transition:.16s transform, .16s box-shadow; }
+  .plan-card:hover { transform:translateY(-2px); box-shadow:0 14px 28px rgba(65,56,110,.12); }
+  .plan-no { width:38px; height:38px; display:inline-grid; place-items:center; border-radius:14px; color:#fff; font-weight:900; font-size:22px; }
+  .plan-title { font-size:21px; font-weight:900; margin-top:12px; line-height:1.2; word-break:keep-all; }
+  .plan-summary { color:var(--muted); font-size:15px; margin-top:6px; }
+  .plan-section { border:1px solid var(--topicLine); border-radius:18px; background:#fff; padding:13px 14px; margin:10px 0; box-shadow:0 6px 16px rgba(65,56,110,.04); }
   .plan-section-title { font-size:19px; font-weight:900; line-height:1.25; margin-bottom:8px; word-break:keep-all; }
-  .plan-item { display:grid; grid-template-columns:82px 1fr; gap:8px; align-items:start; padding:3px 0; line-height:1.45; }
+  .plan-section-title .plan-code { margin-right:8px; }
+  .plan-item { display:grid; grid-template-columns:82px 1fr; gap:8px; align-items:start; padding:4px 0; line-height:1.45; }
   .plan-code { font-weight:900; color:var(--topic); }
   .loading { padding:18px; background:#fff; border:1px solid var(--line); border-radius:20px; color:var(--muted); }
+  .debug-box { margin:12px 0; padding:14px; background:#fffaf0; border:1px solid #ffe0a6; border-radius:18px; color:#6c4a00; line-height:1.5; }
+  .debug-box code { background:#fff; padding:2px 5px; border-radius:6px; }
   .mobile-break { display:none; }
   @media (max-width: 760px) {
     body { font-size:17px; }
@@ -98,8 +109,8 @@
     h2 { font-size:20px; }
     .sub { font-size:14px; }
     .mobile-break { display:block; }
-    .home-actions { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; }
-    .home-actions button { min-height:56px; font-size:18px; padding:9px 10px; }
+    .home-actions { display:flex; gap:7px; flex-wrap:wrap; justify-content:flex-start; max-width:none; margin-top:10px; }
+    .home-actions button { min-height:auto; font-size:14px; padding:8px 10px; }
     .grid { grid-template-columns:1fr; gap:10px; }
     .card { border-radius:20px; padding:14px; }
     .topic-card { min-height:116px; }
@@ -111,6 +122,104 @@
     .hint { font-size:26px; padding:14px; }
     .plan-item { grid-template-columns:68px 1fr; }
   }
+
+/* === 2026-04-26 사용자 요청 수정: 버튼/칩/2030 보기 복구 === */
+.home-actions{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:12px!important;width:min(100%,560px)!important;max-width:560px!important;margin-left:auto!important;align-items:stretch!important;justify-content:end!important;}
+.home-actions button{width:100%!important;min-height:52px!important;font-size:15px!important;padding:10px 14px!important;border-radius:18px!important;}
+.home-actions button:nth-child(-n+3){grid-column:span 2!important;}
+.home-actions button:nth-child(n+4){grid-column:span 3!important;}
+.top-actions{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 10px 0;}
+.nav-btn{border:0!important;color:#fff!important;box-shadow:0 10px 22px rgba(65,56,110,.14)!important;}
+.nav-back{background:linear-gradient(135deg,#8f7cff,#6f87ff)!important;}
+.nav-home{background:linear-gradient(135deg,#76d7b8,#57c89a)!important;}
+.mini-label{display:inline-flex;align-items:center;padding:6px 10px;border-radius:999px;background:#fff4df;color:#cf8a13;font-size:13px;font-weight:900;margin:8px 0 6px;}
+.related-chip{display:inline-flex;align-items:center;margin:4px 6px 0 0;padding:7px 11px;border-radius:999px;background:var(--topicSoft,#eef4ff);color:var(--topic,#4b5fd3);border:1px solid var(--topicLine,#d9defc);font-size:13px;font-weight:800;}
+.future-hero-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:14px;}
+.future-hero-card{cursor:pointer;border-radius:24px;border:1px solid var(--topicLine);background:linear-gradient(180deg,#fff 0%,#fcfbff 100%);padding:18px;box-shadow:0 10px 24px rgba(65,56,110,.08);transition:.18s transform,.18s box-shadow;}
+.future-hero-card:hover{transform:translateY(-2px);box-shadow:0 16px 28px rgba(65,56,110,.12);}
+.future-card-icon{width:44px;height:44px;border-radius:16px;display:grid;place-items:center;font-size:22px;margin-bottom:12px;}
+.future-card-title{font-size:27px;font-weight:900;margin:4px 0 10px;word-break:keep-all;}
+.future-card-summary{color:var(--muted);line-height:1.55;font-size:15px;}
+.future-card-sub{margin-top:10px;font-size:14px;color:#5e5a74;}
+.future-head-chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 12px;font-size:14px;font-weight:900;}
+.future-detail-grid{display:grid;gap:12px;margin-top:14px;}
+.future-detail-card{border:1px solid var(--topicLine);border-radius:22px;background:#fff;padding:16px;box-shadow:0 8px 18px rgba(65,56,110,.06);}
+.future-detail-title{font-size:21px;font-weight:900;margin-bottom:10px;line-height:1.3;}
+.future-list{display:grid;gap:8px;}
+.future-bullet{display:flex;align-items:flex-start;gap:10px;line-height:1.6;font-size:18px;}
+.future-bullet:before{content:'•';font-weight:900;font-size:21px;line-height:1.2;color:var(--topic,#4b5fd3);}
+#detailButtons{gap:10px!important;}
+#detailButtons button{box-shadow:0 10px 20px rgba(65,56,110,.1)!important;color:#fff!important;}
+#detailButtons button:nth-child(1){background:linear-gradient(135deg,#8f7cff,#6f87ff)!important;}
+#detailButtons button:nth-child(2){background:linear-gradient(135deg,#64d2d8,#4bb8cb)!important;}
+#detailButtons button:nth-child(3){background:linear-gradient(135deg,#8fd77c,#67c86a)!important;}
+#detailButtons button:nth-child(4){background:linear-gradient(135deg,#ffb36b,#ff9b6b)!important;}
+#detailButtons button:nth-child(5){background:linear-gradient(135deg,#ff8cb7,#ee6da4)!important;}
+#detailButtons button:nth-child(n+6){background:linear-gradient(135deg,#7aa6ff,#66c2ff)!important;}
+@media (max-width:760px){.home-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;width:100%!important;max-width:none!important;margin-top:10px!important}.home-actions button:nth-child(-n+3),.home-actions button:nth-child(n+4){grid-column:span 1!important}.future-card-title{font-size:22px}.future-bullet{font-size:17px}}
+
+
+/* ===== 2026-04-26 최종 디자인 조정 ===== */
+.home-actions{
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  gap:10px!important;
+  width:min(100%,500px)!important;
+  max-width:500px!important;
+  margin-left:auto!important;
+  align-items:stretch!important;
+  justify-content:end!important;
+}
+.home-actions button{
+  width:100%!important;
+  min-height:44px!important;
+  font-size:17px!important;
+  padding:8px 12px!important;
+  border-radius:16px!important;
+  white-space:nowrap!important;
+}
+.home-actions button:nth-child(-n+3){grid-column:span 2!important;}
+.home-actions button:nth-child(n+4){grid-column:span 3!important;}
+.home-back{
+  background:linear-gradient(135deg,#9f8cff,#69c7ff)!important;
+  color:#fff!important;
+  border:1px solid #cfd7ff!important;
+  box-shadow:0 8px 18px rgba(91,105,220,.16)!important;
+}
+.list-back{
+  background:linear-gradient(135deg,#8f7cff,#6fb3ff)!important;
+  color:#fff!important;
+  border:1px solid #d7dcff!important;
+  box-shadow:0 8px 18px rgba(91,105,220,.16)!important;
+}
+#detailButtons{gap:10px!important;}
+#detailButtons button{box-shadow:0 8px 18px rgba(65,56,110,.10)!important;color:#fff!important;}
+#detailButtons button:nth-child(1){background:linear-gradient(135deg,#8f7cff,#7aa6ff)!important;}
+#detailButtons button:nth-child(2){background:linear-gradient(135deg,#64d2d8,#4bb8cb)!important;}
+#detailButtons button:nth-child(3){background:linear-gradient(135deg,#7bcf6c,#56bf7b)!important;}
+#detailButtons button:nth-child(n+4):nth-child(-n+8){background:linear-gradient(135deg,#72b6ff,#5aa8f2)!important;}
+#detailButtons button:nth-child(9){background:linear-gradient(135deg,#ffb36b,#ff9b6b)!important;}
+#detailButtons button:nth-child(10){background:linear-gradient(135deg,#79dcc5,#56cfa9)!important;}
+#detailButtons button:nth-child(n+11){background:linear-gradient(135deg,#f7a0cb,#da8cff)!important;}
+.keyword-text{
+  font-size:22px;
+  line-height:1.8;
+  font-weight:900;
+  color:#493b79;
+  word-break:keep-all;
+}
+@media (max-width:760px){
+  .home-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;width:100%!important;max-width:none!important;margin-top:10px!important;gap:8px!important;}
+  .home-actions button:nth-child(-n+3),.home-actions button:nth-child(n+4){grid-column:span 1!important;}
+  .home-actions button{font-size:15px!important;min-height:40px!important;padding:7px 9px!important;}
+  .keyword-text{font-size:20px;}
+}
+
+
+/* 2030/목차 상세 화면 상단 버튼 압축 */
+.top-mini-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;}
+.top-mini-actions button{min-height:36px!important;padding:7px 12px!important;border-radius:16px!important;font-size:16px!important;}
+@media(max-width:760px){.top-mini-actions{gap:6px}.top-mini-actions button{font-size:15px!important;padding:6px 10px!important;}}
 </style>
 </head>
 <body>
@@ -121,14 +230,13 @@
         <h1>✨반짝반짝,<br class="mobile-break"> 전문직 합격 기원!✨</h1>
         <div class="sub">🍀주제를 고른 뒤 확인하세요. 합격합시다.⭐</div>
       </div>
-    </div>
-
-    <div class="home-actions">
-      <button class="primary" onclick="openQuiz(false)">📝 퀴즈 모드</button>
-      <button class="soft-blue" onclick="openWrong()">📌 오답노트</button>
-      <button class="soft-green" onclick="openGovTasks()">📘 국정과제 보기</button>
-      <button class="soft-mint" onclick="openWorkPlan()">🌿 주요업무계획 목차보기</button>
-      <button class="soft-lavender" onclick="openFuture2030()">🌈 2030 미래교육</button>
+      <div class="home-actions">
+        <button class="primary" onclick="openQuiz(false)">📝 퀴즈 모드</button>
+        <button class="soft-blue" onclick="openWrong()">📌 오답노트</button>
+        <button class="soft-green" onclick="openGovTasks()">📘 국정과제 보기</button>
+        <button class="soft-mint" onclick="openWorkPlan()">🌿 주요업무계획 목차보기</button>
+        <button class="soft-lavender" onclick="openFuture2030()">🌈 2030 미래교육</button>
+      </div>
     </div>
 
     <div class="stat" id="homeStat"></div>
@@ -140,7 +248,7 @@
   <div id="detail" class="view">
     <div class="top">
       <div>
-        <button class="ghost" onclick="showView('home')">← 첫페이지</button>
+        <button class="home-back" onclick="showView('home')">🏠 첫페이지</button>
         <h2 id="detailTitle"></h2>
         <div class="sub">버튼을 눌러 필요한 부분만 펼쳐 보세요.</div>
       </div>
@@ -155,7 +263,7 @@
   <div id="quiz" class="view">
     <div class="top">
       <div>
-        <button class="ghost" onclick="showView('home')">← 첫페이지</button>
+        <button class="home-back" onclick="showView('home')">🏠 첫페이지</button>
         <h2 id="quizTitle">키워드 초성 퀴즈</h2>
         <div class="sub">초성을 보고 핵심 키워드를 떠올려 보세요. 틀린 것은 오답노트에 저장됩니다.</div>
       </div>
@@ -179,7 +287,7 @@
   <div id="wrong" class="view">
     <div class="top">
       <div>
-        <button class="ghost" onclick="showView('home')">← 첫페이지</button>
+        <button class="home-back" onclick="showView('home')">🏠 첫페이지</button>
         <h2>오답노트</h2>
         <div class="sub">틀린 키워드만 다시 볼 수 있습니다. 브라우저에 자동 저장됩니다.</div>
       </div>
@@ -193,27 +301,33 @@
 
   <div id="workPlan" class="view">
     <div class="top"><div>
-      <button class="ghost" onclick="showView('home')">← 첫페이지</button>
+      <div class="top-mini-actions">
+        <button class="home-back" onclick="showView('home')">🏠 첫페이지</button>
+        <button class="list-back" onclick="openWorkPlan()">↩ 목차 목록</button>
+      </div>
       <h2>주요업무계획 목차보기</h2>
-      <div class="sub">구글시트 workPlan 탭의 내용을 보여줍니다.</div>
+      <div class="sub">2026 충남교육 주요업무계획 목차 정리페이지입니다.</div>
     </div></div>
     <div id="workPlanContent"></div>
   </div>
 
   <div id="govTasks" class="view">
     <div class="top"><div>
-      <button class="ghost" onclick="showView('home')">← 첫페이지</button>
+      <button class="home-back" onclick="showView('home')">🏠 첫페이지</button>
       <h2>국정과제 보기</h2>
-      <div class="sub">구글시트 govTasks 탭의 내용을 보여줍니다.</div>
+      <div class="sub">교육분야 국정과제 중 초·중·고와 교육청 업무에 연결되는 내용입니다.</div>
     </div></div>
     <div id="govTasksContent"></div>
   </div>
 
   <div id="future2030" class="view">
     <div class="top"><div>
-      <button class="ghost" onclick="showView('home')">← 첫페이지</button>
+      <div class="top-mini-actions">
+        <button class="home-back" onclick="showView('home')">🏠 첫페이지</button>
+        <button class="list-back" onclick="openFuture2030()">↩ 2030 목록</button>
+      </div>
       <h2>2030 미래교육</h2>
-      <div class="sub">구글시트 future2030 탭의 내용을 보여줍니다.</div>
+      <div class="sub">충남미래교육 2030 정리페이지입니다.</div>
     </div></div>
     <div id="future2030Content"></div>
   </div>
@@ -248,6 +362,53 @@ const TOPIC_COLORS = [
   ['#009688','#e8fff9','#b7efe4'], ['#ff9f43','#fff4e7','#ffd9af'], ['#5f9ea0','#ecfbfb','#c9eeee'], ['#b05fc8','#fbf0ff','#e9ccf2']
 ];
 
+const POLICY_NAMES = {
+  '1': '배움이 즐거운 행복교육',
+  '2': '모두에게 특별한 미래교육',
+  '3': '포용하며 함께하는 시민교육',
+  '4': '안전하고 든든한 책임교육',
+  '5': '소통하며 협력하는 지원행정'
+};
+const GOV_TITLES = {
+  '55': '지역교육 혁신을 통한 지역인재 양성',
+  '99': 'AI 디지털시대 미래인재 양성',
+  '100': '시민교육 강화로 전인적 역량 함양',
+  '101': '교육격차 해소를 위한 공교육 강화',
+  '102': '학교자치와 교육 거버넌스 혁신'
+};
+const GOV_RELATED = {
+  '55-5': '지역교육협력, 학생 맞춤형 교육',
+  '99-1': 'AI 기반 학습혁신, 디지털 문해력',
+  '99-5': '독서·인문교육, 문해력',
+  '100-1': '민주시민교육, 생태환경교육, 세계시민교육',
+  '100-2': '민주시민교육',
+  '100-3': '학생 건강·체육 통합',
+  '100-4': '민주시민교육, 진로·직업교육',
+  '101-1': '맞춤학력 책임교육, 세계시민교육',
+  '101-2': '충남 온돌봄',
+  '101-3': '충남 온돌봄, 책임교육',
+  '101-4': '학생맞춤통합지원, 교육안전망',
+  '101-5': '마음건강, 교육안전망',
+  '102-1': '민주시민교육, 학교자치, 교육공동체 참여',
+  '102-2': '교육활동 보호, 교사 성장 지원',
+  '102-3': '학교 안전, 학생 건강·체육 통합',
+  '102-4': '지역교육협력, 교육거버넌스'
+};
+const DEFAULT_FUTURE2030 = [
+  {category:'미래사회 전망', title:'불확실성과 위험 증가', content:'사회·경제의 복잡성과 기술 발전으로 예측하기 어려운 위험이 일상화되며, 학교는 변화 대응력과 회복탄력성을 길러야 한다.'},
+  {category:'미래사회 전망', title:'인구구조 변화', content:'저출생, 학령인구 감소, 초고령사회, 가족 형태와 다문화 사회의 확산은 학교와 지역의 역할 변화를 요구한다.'},
+  {category:'미래사회 전망', title:'생태·자연환경 위기', content:'기후위기와 생태환경 변화는 지속가능한 삶의 방식과 생태시민교육을 절박하게 요청한다.'},
+  {category:'미래사회 전망', title:'디지털 일상화', content:'인공지능과 디지털 기술은 삶과 학습 전반에 스며들며, 디지털 문해력과 인간 고유 역량의 중요성을 높인다.'},
+  {category:'미래사회 전망', title:'양극화 심화', content:'경제, 지역, 교육, 정보 격차가 확대되며 공정한 출발선과 포용적 교육안전망이 더 중요해진다.'},
+  {category:'학생상·교사상·학교상', title:'학생상', content:'주체적으로 협력하는 시민으로서 학생\n전제 조건: 주체성\n실천 원칙: 협력성\n지향 가치: 시민성'},
+  {category:'학생상·교사상·학교상', title:'교사상', content:'전문성으로 연대하는 변혁적 교사\n전제 조건: 전문성\n실천 원칙: 연대성\n지향 가치: 연대성'},
+  {category:'학생상·교사상·학교상', title:'학교상', content:'민주성으로 포용하는 공동체로서 학교\n전제 조건: 민주성\n실천 원칙: 포용성\n지향 가치: 공동성'},
+  {category:'5대 전환과제', title:'교육과정 전환', content:'교과 통합 창의적 융합 수업 확대\n학생 주도의 배움중심 수업 설계\n미디어 이해·조절 교육 강화\n학생 맞춤형 평가와 피드백 강화\n학교자율시간 및 초·중 선택과목 개발·운영\n주도성 향상을 위한 독서 및 독후 활동 활성화'},
+  {category:'5대 전환과제', title:'공간 전환', content:'마을결합형 학교 공유 공간 조성\n녹색 건축과 에너지 고효율 그린학교 조성\n모듈러 교실 등을 활용한 맞춤형 교육과정 운영\n미래 교육과정 운영 및 원격교육 가능한 기반 구축'},
+  {category:'5대 전환과제', title:'생태 전환', content:'학생 주도적 생태 전환 교육 활동 확대\n모든 교과와 연계한 생태 전환 교육 운영\n생태 전환 교육 연수로 교육공동체 공감대 형성\n지역사회와 연계한 에너지 절약·재생에너지 활용 활동 운영'},
+  {category:'5대 전환과제', title:'디지털 전환', content:'디지털 기반 학습 환경 조성\n충남형 인공지능 교육과정 운영\n교육공동체 디지털 활용 능력 분석\n디지털 문해력 향상 교원역량 강화\n마주온 활용 교육과정 운영'},
+  {category:'5대 전환과제', title:'교육협력 전환', content:'지역사회 참여 학생동아리 운영\n지역연계 학생 선택 교육과정 확대\n학교·마을 연계 교육과정 운영 내실화\n마을 축제 기획·운영에 학생 참여 기회 확대\n지역사회와 함께하는 교육 활동 강화'}
+];
 let DB = {
   topics: [], topicExtraSections: [], quizKeywords: [], workPlan: [], govTasks: [], future2030: [], pageMemos: []
 };
@@ -281,11 +442,89 @@ async function loadFromSheet() {
 }
 
 function normalizeData(data) {
-  const db = {};
-  ['topics','topicExtraSections','quizKeywords','workPlan','govTasks','future2030','pageMemos'].forEach(k => db[k] = data[k] || []);
-  db.topics = db.topics.map((t, idx) => ({...t, no: Number(t.no || idx + 1)})).sort((a,b) => a.no - b.no);
+  const pick = (...names) => {
+    for (const name of names) {
+      if (Array.isArray(data[name])) return data[name];
+    }
+    return [];
+  };
+  const db = {
+    topics: pick('topics','Topics','TOPICS','주제','앱데이터'),
+    topicExtraSections: pick('topicExtraSections','extraSections','TopicExtraSections','추가자료','추가버튼'),
+    quizKeywords: pick('quizKeywords','QuizKeywords','퀴즈키워드','키워드퀴즈'),
+    workPlan: pick('workPlan','WorkPlan','주요업무계획','주요업무계획목차'),
+    govTasks: pick('govTasks','GovTasks','국정과제','국정과제보기'),
+    future2030: pick('future2030','Future2030','2030미래교육','충남미래교육2030'),
+    pageMemos: pick('pageMemos','PageMemos','페이지메모','메모'),
+    _debug: data._debug || {}
+  };
+  db.topics = db.topics.map((t, idx) => ({...t, no: Number(getAny(t,['no','No','NO','번호'], idx + 1) || idx + 1)})).sort((a,b) => a.no - b.no);
+  db.topicExtraSections = db.topicExtraSections.map(normalizeExtraRow).filter(e => String(e.content || e.memo || '').trim());
+  db.quizKeywords = db.quizKeywords.map(normalizeQuizRow).filter(q => q.answer || q.keyword);
+  db.workPlan = db.workPlan.map(normalizeWorkPlanRow).filter(r => r.policy || r.sectionNo || r.itemNo || r.itemTitle);
+  db.govTasks = db.govTasks.map(normalizeGovRow).filter(r => r.taskNo || r.subNo || r.subTitle);
+  db.future2030 = db.future2030.map(normalizeFutureRow).filter(r => r.category || r.title || r.content);
+  db.pageMemos = db.pageMemos.map(normalizePageMemoRow).filter(r => r.page || r.memo);
   return db;
 }
+
+function getAny(obj, keys, fallback='') {
+  for (const k of keys) {
+    if (Object.prototype.hasOwnProperty.call(obj, k) && String(obj[k] ?? '').trim() !== '') return obj[k];
+  }
+  return fallback;
+}
+function rowVals(obj) { return Object.values(obj).map(v => String(v ?? '').trim()); }
+function normalizeExtraRow(r) {
+  const v=rowVals(r);
+  return {topicNo:getAny(r,['topicNo','topic_no','주제번호','번호'],v[0]||''), sectionTitle:getAny(r,['sectionTitle','title','버튼명','항목명','추가자료명'],v[1]||''), content:getAny(r,['content','내용','본문'],v[2]||''), memo:getAny(r,['memo','메모'],v[3]||'')};
+}
+function normalizeQuizRow(r) {
+  const v=rowVals(r);
+  return {topicNo:getAny(r,['topicNo','주제번호'],v[0]||''), topic:getAny(r,['topic','주제'],v[1]||''), answer:getAny(r,['answer','keyword','키워드','정답'],v[2]||v[1]||''), hint:getAny(r,['hint','초성','힌트'],v[3]||'')};
+}
+function normalizeWorkPlanRow(r) {
+  const v=rowVals(r);
+  let policyNo=String(getAny(r,['policyNo','policy_no','정책번호','대분류번호','영역번호'],'')).trim();
+  let policy=String(getAny(r,['policy','정책','대분류','영역','정책명'],'')).trim();
+  let sectionNo=String(getAny(r,['sectionNo','section_no','소주제번호','중분류번호','분류번호'],'')).trim();
+  let sectionTitle=String(getAny(r,['sectionTitle','section_title','소주제','중분류','분류명','소주제명'],'')).trim();
+  let itemNo=String(getAny(r,['itemNo','item_no','하위과제번호','세부번호','과제번호'],'')).trim();
+  let itemTitle=String(getAny(r,['itemTitle','item_title','하위과제','세부과제','내용','과제명'],'')).trim();
+  let memo=String(getAny(r,['memo','메모'],'')).trim();
+  if (!sectionNo && /^\d+-\d+/.test(v[2]||'')) sectionNo=v[2];
+  if (!sectionTitle && sectionNo && v[3]) sectionTitle=v[3];
+  if (!itemNo && /^\d+-\d+-\d+/.test(v[4]||'')) itemNo=v[4];
+  if (!itemTitle && itemNo && v[5]) itemTitle=v[5];
+  if (!policyNo && /^\d+$/.test(v[0]||'')) policyNo=v[0];
+  if (!policy && policyNo && v[1] && !/^\d+-/.test(v[1])) policy=v[1];
+  if (!policyNo) { const m=String(sectionNo||itemNo).match(/^(\d+)/); if(m) policyNo=m[1]; }
+  if (!policy && policyNo) policy=POLICY_NAMES[policyNo] || ('정책 '+policyNo);
+  if (!sectionNo && itemNo) { const m=itemNo.match(/^(\d+-\d+)/); if(m) sectionNo=m[1]; }
+  return {policyNo, policy, sectionNo, sectionTitle, itemNo, itemTitle, memo};
+}
+function normalizeGovRow(r) {
+  const v=rowVals(r);
+  let taskNo=String(getAny(r,['taskNo','task_no','국정과제번호','과제번호','번호'],'')).trim();
+  let title=String(getAny(r,['title','국정과제','과제명','제목'],'')).trim();
+  let subNo=String(getAny(r,['subNo','sub_no','하위과제번호','실천과제번호','세부번호'],'')).trim();
+  let subTitle=String(getAny(r,['subTitle','sub_title','하위과제','실천과제','세부과제'],'')).trim();
+  let summary=String(getAny(r,['summary','핵심내용','핵심 내용','요약','내용'],'')).trim();
+  let relatedTopics=String(getAny(r,['relatedTopics','related_topics','연결주제','연결 주제','관련주제','관련 주제'],'')).trim();
+  let memo=String(getAny(r,['memo','메모'],'')).trim();
+  if (!taskNo && /^(55|89|99|100|101|102)$/.test(v[0]||'')) taskNo=v[0];
+  if (!title && taskNo && v[1] && !/^\d+-/.test(v[1])) title=v[1];
+  if (!subNo && /^\d+-\d+/.test(v[2]||'')) subNo=v[2];
+  if (!subTitle && subNo && v[3]) subTitle=v[3];
+  if (!summary && v[4]) summary=v[4];
+  if (!relatedTopics && v[5]) relatedTopics=v[5];
+  if (!taskNo && subNo) taskNo=subNo.split('-')[0];
+  if (!title && taskNo) title=GOV_TITLES[taskNo] || ('국정과제 '+taskNo);
+  if (!relatedTopics && subNo) relatedTopics=GOV_RELATED[subNo] || '';
+  return {taskNo, title, subNo, subTitle, summary, relatedTopics, memo};
+}
+function normalizeFutureRow(r) { const v=rowVals(r); return {category:getAny(r,['category','구분','분류'],v[0]||''), title:getAny(r,['title','제목','항목'],v[1]||''), content:getAny(r,['content','내용','본문'],v[2]||''), memo:getAny(r,['memo','메모'],v[3]||'')}; }
+function normalizePageMemoRow(r) { const v=rowVals(r); return {page:getAny(r,['page','페이지','화면'],v[0]||''), memo:getAny(r,['memo','메모'],v[1]||'')}; }
 
 function showView(id) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -299,6 +538,17 @@ function renderHome() {
   renderHomeStat();
   document.getElementById('homeMemo').innerHTML = renderPageMemo('home');
   const grid = document.getElementById('topicGrid');
+  if (!DB.topics.length) {
+    const sheetNames = (DB._debug && DB._debug.sheetNames || []).join(', ');
+    const counts = DB._debug && DB._debug.counts ? JSON.stringify(DB._debug.counts) : '';
+    grid.innerHTML = `<div class="debug-box">
+      <b>주제 데이터가 없습니다.</b><br>
+      구글시트에 <code>topics</code> 탭이 있는지, 첫 행에 <code>no, topic, intro, keywords</code> 같은 헤더가 있는지 확인하세요.<br>
+      ${sheetNames ? `현재 Apps Script가 읽은 시트: ${escapeHtml(sheetNames)}<br>` : ''}
+      ${counts ? `데이터 개수: ${escapeHtml(counts)}` : ''}
+    </div>`;
+    return;
+  }
   grid.innerHTML = DB.topics.map((t, i) => {
     const c = TOPIC_COLORS[i % TOPIC_COLORS.length];
     const chips = splitList(t.keywords).slice(0,3).map(k => `<span class="chip">${escapeHtml(k)}</span>`).join('');
@@ -359,8 +609,9 @@ function showSection(key) {
     title = found ? found[1] : key;
     const value = currentTopic[key] || '';
     if (key === 'keywords') {
-      html = splitList(value).map(k => `<span class="chip">${escapeHtml(k)}</span>`).join(' ');
-      document.getElementById('sectionContent').className = 'content keywords';
+      const words = splitList(value).map(k => escapeHtml(k)).join(' · ');
+      html = `<div class="keyword-text">${words}</div>`;
+      document.getElementById('sectionContent').className = 'content';
     } else {
       html = highlightKeywords(value, currentTopic.keywords);
       document.getElementById('sectionContent').className = 'content';
@@ -371,7 +622,7 @@ function showSection(key) {
 }
 
 function getExtras(topicNo) {
-  return DB.topicExtraSections.filter(e => String(e.topicNo) === String(topicNo));
+  return DB.topicExtraSections.filter(e => String(e.topicNo) === String(topicNo) && String(e.content || e.memo || '').trim());
 }
 
 function renderMeta(t) {
@@ -387,8 +638,10 @@ function renderMeta(t) {
 
 function metaCard(cls, title, value) {
   if (!value) return '';
-  const items = splitLines(value);
-  const body = items.length > 1 ? `<ul>${items.map(x => `<li>${highlightKeywords(x, currentTopic ? currentTopic.keywords : '')}</li>`).join('')}</ul>` : `<p>${highlightKeywords(value, currentTopic ? currentTopic.keywords : '')}</p>`;
+  const items = cls === 'evidence' ? splitEvidence(value) : splitLines(value);
+  const body = items.length > 1
+    ? `<ul>${items.map(x => `<li>${highlightKeywords(x, currentTopic ? currentTopic.keywords : '')}</li>`).join('')}</ul>`
+    : `<p>${highlightKeywords(value, currentTopic ? currentTopic.keywords : '')}</p>`;
   return `<div class="meta-card"><span class="meta-title ${cls}">${escapeHtml(title)}</span>${body}</div>`;
 }
 
@@ -501,33 +754,103 @@ function clearWrong() { if(confirm('오답노트를 모두 비울까요?')) { sa
 
 function openWorkPlan() {
   showView('workPlan');
-  document.getElementById('workPlanContent').innerHTML = renderGroupedRows(DB.workPlan, 'policy', 'sectionNo', 'sectionTitle', 'itemNo', 'itemTitle', 'memo');
+  document.getElementById('workPlanContent').innerHTML = renderWorkPlanCards();
+}
+
+function renderWorkPlanCards() {
+  if (!DB.workPlan.length) return '<div class="card">주요업무계획 데이터가 없습니다. 구글시트 <b>workPlan</b> 탭과 헤더를 확인하세요.</div>';
+  const groups = groupBy(DB.workPlan, r => r.policy || '기타');
+  const entries = Object.entries(groups).sort((a,b)=>Number((a[1][0].policyNo||99))-Number((b[1][0].policyNo||99)));
+  return `<div class="plan-grid">${entries.map(([policy, rows], idx) => {
+    const no = getPolicyNo(rows, idx + 1);
+    const c = planColor(no);
+    const sectionCount = Object.keys(groupBy(rows, r => `${r.sectionNo || ''} ${r.sectionTitle || ''}`.trim())).length;
+    const itemCount = rows.filter(r => r.itemNo || r.itemTitle).length;
+    return `<div class="plan-card" onclick="openWorkPlanDetail('${escapeAttr(policy)}')" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+      <div class="plan-no" style="background:${c[0]}">${escapeHtml(no)}</div>
+      <div class="plan-title" style="color:${c[0]}">${escapeHtml(policy)}</div>
+      <div class="plan-summary">소주제 ${sectionCount}개 · 하위 ${itemCount}개</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function openWorkPlanDetail(policy) {
+  const rows = DB.workPlan.filter(r => String(r.policy || '기타') === String(policy));
+  const no = getPolicyNo(rows, 1);
+  const c = planColor(no);
+  document.getElementById('workPlanContent').innerHTML = `
+    <div class="btns"><button class="ghost" onclick="openWorkPlan()">← 목차 목록</button></div>
+    <h2 style="color:${c[0]}">${escapeHtml(no)}. ${escapeHtml(policy)}</h2>
+    <div class="sub">소주제와 하위 과제를 번호 체계대로 확인하세요.</div>
+    ${renderWorkPlanPolicyRows(rows, c)}
+  `;
+}
+
+function renderWorkPlanPolicyRows(rows, c) {
+  const sections = groupBy(rows, r => `${r.sectionNo || ''}|||${r.sectionTitle || ''}`);
+  return Object.entries(sections).map(([key, sectionRows]) => {
+    const [sectionNo, sectionTitle] = key.split('|||');
+    return `<div class="plan-section" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}; border-color:${c[2]}">
+      <div class="plan-section-title" style="color:${c[0]}"><span class="plan-code">${escapeHtml(sectionNo)}</span> ${escapeHtml(sectionTitle)}</div>
+      ${sectionRows.map(r => `<div class="plan-item"><div class="plan-code" style="color:${c[0]}">${escapeHtml(r.itemNo || '')}</div><div>${escapeHtml(r.itemTitle || '')}${r.memo ? `<div class="small">메모: ${escapeHtml(r.memo)}</div>` : ''}</div></div>`).join('')}
+    </div>`;
+  }).join('');
 }
 
 function openGovTasks() {
   showView('govTasks');
-  document.getElementById('govTasksContent').innerHTML = renderGovTasks();
+  document.getElementById('govTasksContent').innerHTML = renderGovTaskCards();
 }
 
-function renderGovTasks() {
-  const groups = groupBy(DB.govTasks, r => `${r.taskNo || ''} ${r.title || ''}`.trim());
-  return Object.entries(groups).map(([title, rows]) => `<div class="plan-section">
-    <div class="plan-section-title">${escapeHtml(title)}</div>
-    ${rows.map(r => `<div class="plan-item"><div class="plan-code">${escapeHtml(r.subNo || '')}</div><div>${escapeHtml(r.subTitle || '')}<div class="small">${escapeHtml(r.summary || '')}</div>${r.relatedTopics ? `<div class="small">연결 주제: ${escapeHtml(r.relatedTopics)}</div>` : ''}${r.memo ? `<div class="small">메모: ${escapeHtml(r.memo)}</div>` : ''}</div></div>`).join('')}
-  </div>`).join('') || '<div class="card">국정과제 데이터가 없습니다.</div>';
+function renderGovTaskCards() {
+  if (!DB.govTasks.length) return '<div class="card">국정과제 데이터가 없습니다. 구글시트 <b>govTasks</b> 탭과 헤더를 확인하세요.</div>';
+  const groups = groupBy(DB.govTasks, r => String(r.taskNo || '').trim());
+  const order = ['55','99','100','101','102'];
+  const entries = Object.entries(groups).sort((a,b)=>(order.indexOf(a[0])===-1?99:order.indexOf(a[0]))-(order.indexOf(b[0])===-1?99:order.indexOf(b[0])));
+  return `<div class="plan-grid">${entries.map(([taskNo, rows], idx) => {
+    const title = rows[0].title || `국정과제 ${taskNo}`;
+    const c = TOPIC_COLORS[(idx + 1) % TOPIC_COLORS.length];
+    return `<div class="plan-card" onclick="openGovTaskDetail('${escapeAttr(taskNo)}')" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+      <div class="plan-no" style="background:${c[0]}">${escapeHtml(taskNo)}</div>
+      <div class="plan-title" style="color:${c[0]}">${escapeHtml(title)}</div>
+      <div class="plan-summary">하위 과제 ${rows.length}개</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function openGovTaskDetail(taskNo) {
+  const keys = Object.keys(groupBy(DB.govTasks, r => String(r.taskNo || '').trim()));
+  const idx = Math.max(0, keys.indexOf(String(taskNo)));
+  const c = TOPIC_COLORS[(idx + 1) % TOPIC_COLORS.length];
+  const rows = DB.govTasks.filter(r => String(r.taskNo || '').trim() === String(taskNo));
+  const title = rows[0] && rows[0].title ? rows[0].title : `국정과제 ${taskNo}`;
+  document.getElementById('govTasksContent').innerHTML = `
+    <div class="btns"><button class="ghost" onclick="openGovTasks()">← 국정과제 목록</button></div>
+    <h2 style="color:${c[0]}">${escapeHtml(taskNo)}. ${escapeHtml(title)}</h2>
+    ${rows.map(r => {
+      const related = r.relatedTopics || GOV_RELATED[r.subNo] || '';
+      return `<div class="plan-section" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]};border-color:${c[2]}">
+        <div class="plan-section-title" style="color:${c[0]}"><span class="plan-code">${escapeHtml(r.subNo || '')}</span> ${escapeHtml(r.subTitle || '')}</div>
+        ${r.summary ? `<div class="mini-label">핵심 내용</div><div class="content" style="font-size:18px;line-height:1.55">${escapeHtml(r.summary).replace(/\n/g,'<br>')}</div>` : ''}
+        ${related ? `<div class="mini-label">연결 주제</div><div>${splitList(related).map(x => `<span class="related-chip">${escapeHtml(x)}</span>`).join('')}</div>` : ''}
+        ${r.memo ? `<div class="small">메모: ${escapeHtml(r.memo)}</div>` : ''}
+      </div>`;
+    }).join('')}
+  `;
 }
 
 function openFuture2030() {
   showView('future2030');
-  const groups = groupBy(DB.future2030, r => r.category || '기타');
+  const rowsForFuture = DB.future2030.length ? DB.future2030 : DEFAULT_FUTURE2030;
+  const groups = groupBy(rowsForFuture, r => r.category || '기타');
   document.getElementById('future2030Content').innerHTML = Object.entries(groups).map(([cat, rows]) => `<div class="plan-section">
     <div class="plan-section-title">${escapeHtml(cat)}</div>
     ${rows.map(r => `<div class="meta-card"><span class="meta-title purpose">${escapeHtml(r.title || '')}</span><p>${escapeHtml(r.content || '').replace(/\n/g,'<br>')}</p>${r.memo ? renderMemoText(r.memo) : ''}</div>`).join('')}
-  </div>`).join('') || '<div class="card">2030 미래교육 데이터가 없습니다.</div>';
+  </div>`).join('');
 }
 
 function renderGroupedRows(rows, groupKey, sectionNoKey, sectionTitleKey, itemNoKey, itemTitleKey, memoKey) {
-  if (!rows.length) return '<div class="card">데이터가 없습니다.</div>';
+  if (!rows.length) return '<div class="card">데이터가 없습니다. 구글시트 탭 이름과 헤더를 확인하세요.</div>';
   const groups = groupBy(rows, r => r[groupKey] || '기타');
   return Object.entries(groups).map(([group, groupRows]) => `<div class="plan-section">
     <div class="plan-section-title">${escapeHtml(group)}</div>
@@ -535,9 +858,28 @@ function renderGroupedRows(rows, groupKey, sectionNoKey, sectionTitleKey, itemNo
   </div>`).join('');
 }
 
+function getPolicyNo(rows, fallback) {
+  const direct = rows.find(r => r.policyNo || r.no);
+  if (direct) return direct.policyNo || direct.no;
+  const fromSection = rows.find(r => r.sectionNo && /^\d+/.test(String(r.sectionNo)));
+  if (fromSection) return String(fromSection.sectionNo).match(/^\d+/)[0];
+  return fallback;
+}
+function planColor(no) {
+  const map = {
+    '1':['#e75b9a','#fff0f7','#ffd0e5'],
+    '2':['#229bd8','#eef8ff','#cdefff'],
+    '3':['#18a44a','#efffed','#c9f2c4'],
+    '4':['#f36c1e','#fff2e8','#ffd6bd'],
+    '5':['#9b58bd','#fbf0ff','#e9ccf2']
+  };
+  return map[String(no)] || TOPIC_COLORS[(Number(no) - 1) % TOPIC_COLORS.length] || TOPIC_COLORS[0];
+}
+function escapeAttr(s) { return String(s || '').replace(/&/g,'&amp;').replace(/'/g,'&#39;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function getTopicTitle(no) { const t = DB.topics.find(x => String(x.no) === String(no)); return t ? t.topic : ''; }
 function splitList(text) { return String(text || '').split(/,|，|\n|;/).map(s => s.trim()).filter(Boolean); }
 function splitLines(text) { return String(text || '').split(/\n|\r\n|;/).map(s => s.replace(/^[-•·○▪\s]+/, '').trim()).filter(Boolean); }
+function splitEvidence(text) { return String(text || '').split(/,|\n|\r\n|;/).map(s => s.replace(/^[-•·○▪\s]+/, '').trim()).filter(Boolean); }
 function normalizeAnswer(s) { return String(s || '').replace(/\s+/g,'').replace(/[·ㆍ・\-]/g,'').toLowerCase(); }
 function groupBy(arr, fn) { return arr.reduce((acc, x) => { const k = fn(x) || '기타'; (acc[k] ||= []).push(x); return acc; }, {}); }
 function escapeHtml(s) { return String(s || '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
@@ -558,6 +900,189 @@ function chosung(str) {
     if (/\s/.test(ch)) return ' ';
     return ch;
   }).join('');
+}
+
+
+/* === 2026-04-26 사용자 요청 수정: 데이터 헤더/2030/국정과제 렌더링 오버라이드 === */
+const FUTURE_CATEGORY_META_FIXED = {
+  overview: { label:'미래사회 전망', icon:'🔭', colors:['#6e78ff','#eef0ff','#d7ddff'] },
+  profiles: { label:'학생상·교사상·학교상', icon:'🌟', colors:['#7c6cff','#f3efff','#ddd4ff'] },
+  transitions: { label:'5대 전환과제', icon:'🧭', colors:['#6a8cff','#eef4ff','#cfe0ff'] }
+};
+
+function normalizeWorkPlanRow(r) {
+  const v=rowVals(r);
+  let policyNo=String(getAny(r,['policyNo','policy_no','정책번호','대분류번호','영역번호'], '')).trim();
+  let policy=String(getAny(r,['policy','policyTitle','policy_title','정책','대분류','영역','정책명'], '')).trim();
+  let sectionNo=String(getAny(r,['sectionNo','section_no','sectionCode','section_code','소주제번호','중분류번호','분류번호'], '')).trim();
+  let sectionTitle=String(getAny(r,['sectionTitle','section_title','소주제','중분류','분류명','소주제명'], '')).trim();
+  let itemNo=String(getAny(r,['itemNo','item_no','itemCode','item_code','하위과제번호','세부번호','과제번호'], '')).trim();
+  let itemTitle=String(getAny(r,['itemTitle','item_title','하위과제','세부과제','내용','과제명'], '')).trim();
+  let memo=String(getAny(r,['memo','메모'], '')).trim();
+  if (!policyNo && /^[0-9]+$/.test(v[0]||'')) policyNo=v[0];
+  if (!policy && policyNo && v[1] && !/^[0-9]+-/.test(v[1])) policy=v[1];
+  if (!sectionNo && /^[0-9]+-[0-9]+$/.test(v[2]||'')) sectionNo=v[2];
+  if (!sectionTitle && sectionNo && v[3]) sectionTitle=v[3];
+  if (!itemNo && /^[0-9]+-[0-9]+-[0-9]+$/.test(v[4]||'')) itemNo=v[4];
+  if (!itemTitle && itemNo && v[5]) itemTitle=v[5];
+  if (!policyNo) { const m=String(sectionNo||itemNo).match(/^([0-9]+)/); if(m) policyNo=m[1]; }
+  if (!policy && policyNo) policy=POLICY_NAMES[policyNo] || ('정책 '+policyNo);
+  if (!sectionNo && itemNo) { const m=itemNo.match(/^([0-9]+-[0-9]+)/); if(m) sectionNo=m[1]; }
+  return {policyNo, policy, sectionNo, sectionTitle, itemNo, itemTitle, memo};
+}
+
+function normalizeGovRow(r) {
+  const v=rowVals(r);
+  let taskNo=String(getAny(r,['taskNo','task_no','국정과제번호','과제번호','번호'], '')).trim();
+  let title=String(getAny(r,['title','taskTitle','task_title','국정과제','과제명','제목'], '')).trim();
+  let summary=String(getAny(r,['summary','핵심내용','핵심 내용','요약','내용'], '')).trim();
+  let subNo=String(getAny(r,['subNo','sub_no','subCode','sub_code','하위과제번호','실천과제번호','세부번호'], '')).trim();
+  let subTitle=String(getAny(r,['subTitle','sub_title','하위과제','실천과제','세부과제'], '')).trim();
+  let core=String(getAny(r,['core','핵심내용','핵심 내용'], '')).trim();
+  let relatedTopics=String(getAny(r,['relatedTopics','related_topics','links','연결주제','연결 주제','관련주제','관련 주제'], '')).trim();
+  let memo=String(getAny(r,['memo','메모'], '')).trim();
+  if (!taskNo && /^(55|89|99|100|101|102)$/.test(v[0]||'')) taskNo=v[0];
+  if (!title && taskNo && v[1] && !/^[0-9]+-/.test(v[1])) title=v[1];
+  if (!summary && v[2] && !/^[0-9]+-/.test(v[2])) summary=v[2];
+  if (!subNo && /^[0-9]+-[0-9]+$/.test(v[3]||'')) subNo=v[3];
+  if (!subTitle && subNo && v[4]) subTitle=v[4];
+  if (!core && v[5]) core=v[5];
+  if (!relatedTopics && v[6]) relatedTopics=v[6];
+  if (!taskNo && subNo) taskNo=subNo.split('-')[0];
+  if (!title && taskNo) title=GOV_TITLES[taskNo] || ('국정과제 '+taskNo);
+  if (!relatedTopics && subNo) relatedTopics=GOV_RELATED[subNo] || '';
+  return {taskNo, title, subNo, subTitle, summary, core, relatedTopics, memo};
+}
+
+function normalizeFutureRow(r) {
+  const v=rowVals(r);
+  const category=String(getAny(r,['category','구분','분류'], v[0]||'')).trim();
+  const categoryTitle=String(getAny(r,['categoryTitle','category_title','구분명','분류명'], v[1]||'')).trim();
+  const summary=String(getAny(r,['summary','요약','핵심내용'], v[2]||'')).trim();
+  const sectionName=String(getAny(r,['sectionName','section_name','세부주제','소주제','section'], v[3]||'')).trim();
+  const itemOrder=String(getAny(r,['itemOrder','item_order','순서','정렬'], v[4]||'')).trim();
+  const itemTitle=String(getAny(r,['itemTitle','item_title','항목명','제목'], v[5]||'')).trim();
+  const itemText=String(getAny(r,['itemText','item_text','내용','본문'], v[6]||'')).trim();
+  const memo=String(getAny(r,['memo','메모'], v[7]||'')).trim();
+  return {category, categoryTitle, summary, sectionName, itemOrder, itemTitle, itemText, memo};
+}
+
+const __oldNormalizeData = normalizeData;
+normalizeData = function(data) {
+  const db = __oldNormalizeData(data);
+  db.future2030 = db.future2030.filter(r => r.category || r.categoryTitle || r.sectionName || r.itemText);
+  return db;
+};
+
+function topNavHTML(backText, backAction) {
+  return `<div class="btns"><button class="list-back" onclick="${backAction}">↩ ${escapeHtml(backText)}</button></div>`;
+}
+
+function openWorkPlanDetail(policy) {
+  const rows = DB.workPlan.filter(r => String(r.policy || '기타') === String(policy));
+  const no = getPolicyNo(rows, 1);
+  const c = planColor(no);
+  document.getElementById('workPlanContent').innerHTML = `
+    <h2 style="color:${c[0]}">${escapeHtml(no)}. ${escapeHtml(policy)}</h2>
+    <div class="sub">소주제와 하위 과제를 번호 체계대로 확인하세요.</div>
+    ${renderWorkPlanPolicyRows(rows, c)}
+  `;
+}
+
+function openGovTaskDetail(taskNo) {
+  const keys = Object.keys(groupBy(DB.govTasks, r => String(r.taskNo || '').trim()));
+  const idx = Math.max(0, keys.indexOf(String(taskNo)));
+  const c = TOPIC_COLORS[(idx + 1) % TOPIC_COLORS.length];
+  const rows = DB.govTasks.filter(r => String(r.taskNo || '').trim() === String(taskNo));
+  const title = rows[0] && rows[0].title ? rows[0].title : `국정과제 ${taskNo}`;
+  document.getElementById('govTasksContent').innerHTML = `
+    ${topNavHTML('국정과제 목록', 'openGovTasks()')}
+    <h2 style="color:${c[0]}">${escapeHtml(taskNo)}. ${escapeHtml(title)}</h2>
+    ${rows.map(r => {
+      const related = r.relatedTopics || GOV_RELATED[r.subNo] || '';
+      const coreText = r.core || r.summary || '';
+      return `<div class="plan-section" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]};border-color:${c[2]}">
+        <div class="plan-section-title" style="color:${c[0]}"><span class="plan-code">${escapeHtml(r.subNo || '')}</span> ${escapeHtml(r.subTitle || '')}</div>
+        ${coreText ? `<div class="mini-label">핵심 내용</div><div class="content" style="font-size:18px;line-height:1.55">${escapeHtml(coreText).replace(/\n/g,'<br>')}</div>` : ''}
+        ${related ? `<div class="mini-label">연결 주제</div><div>${splitList(related).map(x => `<span class="related-chip" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">${escapeHtml(x)}</span>`).join('')}</div>` : ''}
+        ${r.memo ? `<div class="small">메모: ${escapeHtml(r.memo)}</div>` : ''}
+      </div>`;
+    }).join('')}
+  `;
+}
+
+function getFutureRows() {
+  const rows = DB.future2030.length ? DB.future2030 : DEFAULT_FUTURE2030.map(r => ({
+    category: r.category === '미래사회 전망' ? 'overview' : r.category === '학생상·교사상·학교상' ? 'profiles' : 'transitions',
+    categoryTitle: r.category,
+    summary: '',
+    sectionName: r.title,
+    itemOrder: '',
+    itemTitle: '',
+    itemText: r.content,
+    memo: ''
+  }));
+  return rows.filter(r => String(r.category || '').trim());
+}
+
+function getFutureMeta(category, rows) {
+  const meta = FUTURE_CATEGORY_META_FIXED[category] || { label: rows[0]?.categoryTitle || category, icon:'✨', colors:['#7c61ff','#f0ebff','#ded2ff'] };
+  const label = rows.find(r => r.categoryTitle)?.categoryTitle || meta.label;
+  const summary = rows.find(r => r.summary)?.summary || rows.map(r => r.sectionName).filter(Boolean).join(', ');
+  return { ...meta, label, summary };
+}
+
+function openFuture2030() {
+  showView('future2030');
+  const rowsForFuture = getFutureRows();
+  const groups = groupBy(rowsForFuture, r => r.category || 'etc');
+  const order = ['overview','profiles','transitions'];
+  const entries = Object.entries(groups)
+    .filter(([cat, rows]) => rows.some(r => r.sectionName || r.itemText || r.categoryTitle))
+    .sort((a,b) => {
+      const ai = order.indexOf(a[0]);
+      const bi = order.indexOf(b[0]);
+      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+    });
+  document.getElementById('future2030Content').innerHTML = `
+    <div class="future-hero-grid">
+      ${entries.map(([cat, rows]) => {
+        const meta = getFutureMeta(cat, rows);
+        const colors = meta.colors || ['#7c61ff','#f0ebff','#ded2ff'];
+        const detailCount = [...new Set(rows.map(r => r.sectionName).filter(Boolean))].length || rows.length;
+        return `<div class="future-hero-card" onclick="openFutureCategory('${escapeAttr(cat)}')" style="--topic:${colors[0]};--topicSoft:${colors[1]};--topicLine:${colors[2]}">
+          <div class="future-card-icon" style="background:${colors[1]};color:${colors[0]}">${meta.icon}</div>
+          <div class="future-card-title" style="color:${colors[0]}">${escapeHtml(meta.label)}</div>
+          <div class="future-card-summary">${escapeHtml(meta.summary)}</div>
+          <div class="future-card-sub">세부 항목 ${detailCount}개 보기</div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+function openFutureCategory(category) {
+  showView('future2030');
+  const rows = getFutureRows().filter(r => String(r.category) === String(category));
+  const meta = getFutureMeta(category, rows);
+  const colors = meta.colors || ['#7c61ff','#f0ebff','#ded2ff'];
+  const sections = groupBy(rows, r => r.sectionName || r.itemTitle || '기타');
+  document.getElementById('future2030Content').innerHTML = `
+    <h2 style="color:${colors[0]};margin-top:2px">${meta.icon} ${escapeHtml(meta.label)}</h2>
+    ${meta.summary ? `<div class="sub" style="margin-bottom:10px">${escapeHtml(meta.summary)}</div>` : ''}
+    <div class="future-detail-grid">
+      ${Object.entries(sections).map(([sectionName, sectionRows]) => {
+        const bulletRows = sectionRows.slice().sort((a,b) => (Number(a.itemOrder)||999) - (Number(b.itemOrder)||999));
+        return `<div class="future-detail-card" style="--topic:${colors[0]};--topicSoft:${colors[1]};--topicLine:${colors[2]};border-color:${colors[2]}">
+          <div class="future-detail-title" style="color:${colors[0]}">${escapeHtml(sectionName)}</div>
+          <div class="future-list">
+            ${bulletRows.map(r => `<div class="future-bullet" style="--topic:${colors[0]}">${escapeHtml(r.itemText || r.itemTitle || '').replace(/\n/g,'<br>')}</div>`).join('')}
+          </div>
+          ${sectionRows[0] && sectionRows[0].memo ? `<div class="small" style="margin-top:10px">메모: ${escapeHtml(sectionRows[0].memo)}</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>
+  `;
 }
 
 loadFromSheet();
