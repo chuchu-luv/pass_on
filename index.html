@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="ko">
 <head>
@@ -778,6 +779,274 @@
 /* 2030 상세 화면: 상단 헤더 버튼만 사용, 본문 중복 버튼 제거 */
 #future2030Content .future-top-actions { display: none !important; }
 
+
+/* === news 버튼 추가 후 홈 버튼 6개 배치 안정화 === */
+.home-actions.home-actions-fixed { grid-template-columns: repeat(6, minmax(0, 1fr)) !important; width: 500px !important; max-width: 500px !important; }
+.home-actions.home-actions-fixed > button { grid-column: span 2 !important; }
+@media (max-width: 720px) {
+  .home-actions.home-actions-fixed { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; width: 100% !important; max-width: none !important; }
+  .home-actions.home-actions-fixed > button { grid-column: span 1 !important; }
+}
+.news-detail-title { font-size: 22px; line-height: 1.35; margin: 4px 0 12px; color: var(--topic); }
+.news-support-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:10px; }
+.news-card-sub { color:var(--muted); font-size:15px; margin-top:6px; line-height:1.35; }
+
+
+
+/* === FINAL FIX 2026-04-27: 홈 버튼 3/3, 국정과제 칩 가독성 === */
+.home-actions.home-actions-fixed {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  width: 540px !important;
+  max-width: 540px !important;
+  margin-left: auto !important;
+  align-items: stretch !important;
+}
+.home-actions.home-actions-fixed > button {
+  grid-column: span 1 !important;
+  width: 100% !important;
+  min-height: 42px !important;
+  height: 42px !important;
+  padding: 8px 10px !important;
+  border-radius: 15px !important;
+  font-size: 15px !important;
+  line-height: 1.1 !important;
+  white-space: nowrap !important;
+}
+.mini-label,
+.gov-label {
+  display: block !important;
+  margin: 10px 0 4px !important;
+  font-weight: 900 !important;
+  color: #19142d !important;
+  font-size: 17px !important;
+}
+.related-chip,
+.gov-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  padding: 5px 11px !important;
+  margin: 4px 5px 0 0 !important;
+  border-radius: 999px !important;
+  background: var(--topicSoft, #ecfff6) !important;
+  color: var(--topic, #169b74) !important;
+  border: 1px solid var(--topicLine, #bdeedd) !important;
+  font-size: 14px !important;
+  font-weight: 900 !important;
+  line-height: 1.15 !important;
+}
+.gov-core-text {
+  font-size: 18px !important;
+  line-height: 1.55 !important;
+  color: #1f1b34 !important;
+  word-break: keep-all !important;
+}
+@media (max-width: 760px) {
+  .home-actions.home-actions-fixed {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-top: 10px !important;
+  }
+  .home-actions.home-actions-fixed > button {
+    height: 40px !important;
+    min-height: 40px !important;
+    font-size: 14px !important;
+  }
+}
+
+
+/* === FINAL CLEAN PATCH 2026-04-27: 홈 버튼 3/3 강제, 뉴스 빈 화면 문구 정리 === */
+.home-actions,
+.home-actions.home-actions-fixed {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  width: 540px !important;
+  max-width: 540px !important;
+  margin-left: auto !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+}
+.home-actions > button,
+.home-actions.home-actions-fixed > button {
+  grid-column: auto !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 8px 10px !important;
+  border-radius: 15px !important;
+  font-size: 15px !important;
+  line-height: 1.1 !important;
+  white-space: nowrap !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+.empty-news-card {
+  padding: 22px 24px !important;
+  border-radius: 22px !important;
+  border: 1px solid #d9d0ff !important;
+  background: rgba(255,255,255,.96) !important;
+  box-shadow: 0 8px 20px rgba(65,56,110,.06) !important;
+}
+.empty-news-title {
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  color: #44306f !important;
+  margin-bottom: 8px !important;
+}
+.empty-news-text {
+  font-size: 18px !important;
+  line-height: 1.55 !important;
+  color: #37304f !important;
+  word-break: keep-all !important;
+}
+@media (max-width: 760px) {
+  .home-actions,
+  .home-actions.home-actions-fixed {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-top: 10px !important;
+  }
+  .home-actions > button,
+  .home-actions.home-actions-fixed > button {
+    height: 40px !important;
+    min-height: 40px !important;
+    font-size: 14px !important;
+    padding: 7px 6px !important;
+  }
+}
+
+
+
+/* === REAL FINAL PATCH: 홈 버튼 3/3, 뉴스 화면 구분 정리 === */
+#home .top {
+  display: grid !important;
+  grid-template-columns: minmax(260px, 1fr) 560px !important;
+  gap: 22px !important;
+  align-items: start !important;
+}
+#home .home-actions,
+#home .home-actions.home-actions-fixed {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  grid-auto-flow: row !important;
+  gap: 10px !important;
+  width: 560px !important;
+  max-width: 560px !important;
+  margin: 0 !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+}
+#home .home-actions > button,
+#home .home-actions.home-actions-fixed > button,
+#home .home-actions.home-actions-fixed > button:nth-child(1),
+#home .home-actions.home-actions-fixed > button:nth-child(2),
+#home .home-actions.home-actions-fixed > button:nth-child(3),
+#home .home-actions.home-actions-fixed > button:nth-child(4),
+#home .home-actions.home-actions-fixed > button:nth-child(5),
+#home .home-actions.home-actions-fixed > button:nth-child(6) {
+  grid-column: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 8px 9px !important;
+  border-radius: 15px !important;
+  font-size: 14.5px !important;
+  line-height: 1.1 !important;
+  white-space: nowrap !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+@media (max-width: 860px) {
+  #home .top { display: block !important; }
+  #home .home-actions,
+  #home .home-actions.home-actions-fixed {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin-top: 12px !important;
+  }
+}
+#news .top-mini-actions { margin-bottom: 10px !important; }
+#news .sub {
+  max-width: 780px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+.news-detail-actions { margin: 12px 0 10px !important; }
+.news-detail-wrap {
+  padding: 14px 14px 18px !important;
+  background: rgba(255,255,255,.88) !important;
+}
+.news-detail-title {
+  padding: 12px 14px !important;
+  margin: 0 0 12px !important;
+  border-radius: 18px !important;
+  background: linear-gradient(135deg, #f4f0ff, #fff8fb) !important;
+  border: 1px solid #ddd0ff !important;
+  color: #5d4bff !important;
+  font-size: 19px !important;
+  line-height: 1.55 !important;
+  word-break: keep-all !important;
+}
+.news-block {
+  margin: 8px 0 !important;
+  padding: 14px 16px !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(124,97,255,.18) !important;
+  box-shadow: 0 4px 12px rgba(85,70,130,.04) !important;
+}
+.news-block p {
+  margin: 11px 0 0 !important;
+  font-size: 16.5px !important;
+  line-height: 1.6 !important;
+  color: #17142a !important;
+  word-break: keep-all !important;
+}
+.news-block-title {
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 5px 11px !important;
+  border-radius: 999px !important;
+  font-weight: 900 !important;
+  font-size: 14px !important;
+}
+.news-issue { background: #f4fff8 !important; border-color: #ccefd9 !important; }
+.news-issue .news-block-title { background: #daf7e6 !important; color: #147b45 !important; }
+.news-implication { background: #f7fbff !important; border-color: #cfe5ff !important; }
+.news-implication .news-block-title { background: #dceeff !important; color: #2768b0 !important; }
+.news-policy { background: #fffdf3 !important; border-color: #f1e3b4 !important; }
+.news-policy .news-block-title { background: #fff1bf !important; color: #87630c !important; }
+.news-intro { background: #fff7fb !important; border-color: #f0cfe0 !important; }
+.news-intro .news-block-title { background: #ffe1ef !important; color: #a13d70 !important; }
+.news-support { background: #f8f5ff !important; border-color: #ddd2ff !important; }
+.news-support .news-block-title { background: #ebe3ff !important; color: #5e46c9 !important; }
+.news-effect { background: #f4fffd !important; border-color: #c5ece5 !important; }
+.news-effect .news-block-title { background: #d9f7f1 !important; color: #17786f !important; }
+.news-support-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+  gap: 8px !important;
+  margin: 8px 0 !important;
+}
+.news-support-grid .news-block { margin: 0 !important; }
+.plan-card { margin-bottom: 6px !important; }
+
 </style>
 </head>
 <body>
@@ -794,6 +1063,7 @@
         <button class="soft-green home-action" onclick="openGovTasks()">📘 국정과제 보기</button>
         <button class="soft-mint home-action" onclick="openWorkPlan()">🌿 주요업무계획</button>
         <button class="soft-lavender home-action" onclick="openFuture2030()">🌈 2030 미래교육</button>
+        <button class="soft-blue home-action" onclick="openNews()">📰 뉴스 현황</button>
       </div>
     </div>
 
@@ -914,6 +1184,17 @@
     </div></div>
     <div id="future2030Content"></div>
   </div>
+
+  <div id="news" class="view">
+    <div class="top"><div>
+      <div class="top-mini-actions">
+        <button class="home-back" onclick="showView('home')">🏠 첫페이지</button>
+      </div>
+      <h2>뉴스 현황 정리</h2>
+      <div class="sub">기사 핵심, 실태분석, 시사점, 관련 충남 정책, 지원방안을 암기용으로 정리합니다.</div>
+    </div></div>
+    <div id="newsContent"></div>
+  </div>
 </div>
 
 <script>
@@ -993,7 +1274,7 @@ const DEFAULT_FUTURE2030 = [
   {category:'5대 전환과제', title:'교육협력 전환', content:'지역사회 참여 학생동아리 운영\n지역연계 학생 선택 교육과정 확대\n학교·마을 연계 교육과정 운영 내실화\n마을 축제 기획·운영에 학생 참여 기회 확대\n지역사회와 함께하는 교육 활동 강화'}
 ];
 let DB = {
-  topics: [], topicExtraSections: [], quizKeywords: [], workPlan: [], govTasks: [], future2030: [], pageMemos: [], appMemos: []
+  topics: [], topicExtraSections: [], quizKeywords: [], workPlan: [], govTasks: [], future2030: [], news: [], pageMemos: [], appMemos: []
 };
 let currentTopic = null;
 let currentQuiz = null;
@@ -1038,6 +1319,7 @@ function normalizeData(data) {
     workPlan: pick('workPlan','WorkPlan','주요업무계획','주요업무계획목차'),
     govTasks: pick('govTasks','GovTasks','국정과제','국정과제보기'),
     future2030: pick('future2030','Future2030','2030미래교육','충남미래교육2030'),
+    news: pick('news','News','NEWS','뉴스','뉴스현황'),
     pageMemos: pick('pageMemos','PageMemos','페이지메모','메모'),
     appMemos: pick('appMemos','AppMemos','기억메모','앱메모'),
     _debug: data._debug || {}
@@ -1048,6 +1330,7 @@ function normalizeData(data) {
   db.workPlan = db.workPlan.map(normalizeWorkPlanRow).filter(r => r.policy || r.sectionNo || r.itemNo || r.itemTitle);
   db.govTasks = db.govTasks.map(normalizeGovRow).filter(r => r.taskNo || r.subNo || r.subTitle);
   db.future2030 = db.future2030.map(normalizeFutureRow).filter(r => r.category || r.title || r.content);
+  db.news = db.news.map(normalizeNewsRow).filter(r => r.articleCore || r.issue || r.implication || r.policy);
   db.pageMemos = db.pageMemos.map(normalizePageMemoRow).filter(r => r.page || r.memo);
   db.appMemos = db.appMemos.map(normalizeAppMemoRow).filter(r => r.id || r.memo);
   return db;
@@ -1060,6 +1343,24 @@ function getAny(obj, keys, fallback='') {
   return fallback;
 }
 function rowVals(obj) { return Object.values(obj).map(v => String(v ?? '').trim()); }
+
+function normalizeNewsRow(r) {
+  const v = rowVals(r);
+  return {
+    articleCore: String(getAny(r, ['articleCore','article_core','기사 핵심','기사핵심','핵심'], v[0] || '')).trim(),
+    issue: String(getAny(r, ['issue','analysis','실태분석','실태 분석'], v[1] || '')).trim(),
+    implication: String(getAny(r, ['implication','시사점'], v[2] || '')).trim(),
+    policy: String(getAny(r, ['policy','relatedPolicy','related_policy','관련 충남 정책','관련충남정책','충남정책'], v[3] || '')).trim(),
+    intro: String(getAny(r, ['intro','서론'], v[4] || '')).trim(),
+    support1: String(getAny(r, ['support1','지원방안 1','지원방안1'], v[5] || '')).trim(),
+    support2: String(getAny(r, ['support2','지원방안 2','지원방안2'], v[6] || '')).trim(),
+    support3: String(getAny(r, ['support3','지원방안 3','지원방안3'], v[7] || '')).trim(),
+    support4: String(getAny(r, ['support4','지원방안 4','지원방안4'], v[8] || '')).trim(),
+    support5: String(getAny(r, ['support5','지원방안 5','지원방안5'], v[9] || '')).trim(),
+    effect: String(getAny(r, ['effect','expectedEffect','expected_effect','기대효과'], v[10] || '')).trim()
+  };
+}
+
 function normalizeExtraRow(r) {
   const v = rowVals(r);
   const topicNo = getAny(r, ['topicNo','topic_no','주제번호','번호'], v[0] || '');
@@ -2212,6 +2513,166 @@ function openFutureCategory(category) {
         <div class="future-list">${bulletRows.map(r => `<div class="future-bullet" style="--topic:${colors[0]}">${escapeHtml(r.itemText || r.itemTitle || '').replace(/\n/g,'<br>')}</div>`).join('')}</div>
       </div>`;
     }).join('')}</div>`;
+}
+
+
+/* === FINAL PATCH: 뉴스 현황 페이지 === */
+function getNewsRows() { return Array.isArray(DB.news) ? DB.news : []; }
+function openNews() {
+  showView('news');
+  const box = document.getElementById('newsContent');
+  if (!box) return;
+  box.innerHTML = renderNewsCards();
+}
+function renderNewsCards() {
+  const rows = getNewsRows();
+  if (!rows.length) return '<div class="card empty-news-card"><div class="empty-news-title">아직 정리된 뉴스가 없습니다.</div><div class="empty-news-text">뉴스 기사를 분석한 내용을 <b>news</b> 시트에 추가하면 이곳에 카드로 표시됩니다.</div></div>';
+  return `<div class="plan-grid">${rows.map((r, i) => {
+    const c = TOPIC_COLORS[i % TOPIC_COLORS.length];
+    const title = r.articleCore || `뉴스 ${i + 1}`;
+    return `<div class="plan-card" onclick="openNewsDetail(${i})" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+      <div class="plan-no" style="background:${c[0]}">NEWS</div>
+      <div class="plan-title" style="color:${c[0]}">${escapeHtml(title)}</div>
+      <div class="news-card-sub">${escapeHtml(r.implication || r.policy || r.issue || '').slice(0, 90)}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+function openNewsDetail(index) {
+  const rows = getNewsRows();
+  const r = rows[index];
+  if (!r) return openNews();
+  const c = TOPIC_COLORS[index % TOPIC_COLORS.length];
+  const supports = [r.support1, r.support2, r.support3, r.support4, r.support5];
+  document.getElementById('newsContent').innerHTML = `
+    <div class="news-detail-actions"><button class="ghost" onclick="openNews()">← 뉴스 목록</button></div>
+    <div class="section-box news-detail-wrap" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]};border-color:${c[2]}">
+      <div class="news-detail-title">📰 ${escapeHtml(r.articleCore || '기사 핵심 없음')}</div>
+      ${renderNewsBlock('실태분석', r.issue)}
+      ${renderNewsBlock('시사점', r.implication)}
+      ${renderNewsBlock('관련 충남 정책', r.policy)}
+      ${renderNewsBlock('서론', r.intro)}
+      <div class="news-support-grid">${supports.map((text, idx) => renderNewsBlock('지원방안 ' + (idx + 1), text)).join('')}</div>
+      ${renderNewsBlock('기대효과', r.effect)}
+    </div>`;
+}
+function renderNewsBlock(title, text) {
+  if (!String(text || '').trim()) return '';
+  const key = String(title || '').replace(/\s+/g, '');
+  let cls = 'news-block';
+  if (key.includes('실태분석')) cls += ' news-issue';
+  else if (key.includes('시사점')) cls += ' news-implication';
+  else if (key.includes('관련충남정책')) cls += ' news-policy';
+  else if (key.includes('서론')) cls += ' news-intro';
+  else if (key.includes('지원방안')) cls += ' news-support';
+  else if (key.includes('기대효과')) cls += ' news-effect';
+  return `<div class="${cls}"><span class="news-block-title">${escapeHtml(title)}</span><p>${escapeHtml(text).replace(/\n/g, '<br>')}</p></div>`;
+}
+
+
+/* === FINAL FIX 2026-04-27: 데이터 로딩 안정화, 국정과제 렌더링, 뉴스 렌더링 === */
+function rawRowVals(obj) {
+  const rawKeys = Object.keys(obj || {})
+    .filter(k => /^_c\d+$/.test(k))
+    .sort((a, b) => Number(a.slice(2)) - Number(b.slice(2)));
+  if (rawKeys.length) return rawKeys.map(k => String(obj[k] ?? '').trim());
+  return Object.values(obj || {}).filter(v => !Array.isArray(v) && typeof v !== 'object').map(v => String(v ?? '').trim());
+}
+function normalizeNewsRow(r) {
+  const v = rawRowVals(r);
+  return {
+    articleCore: String(getAny(r, ['articleCore','기사 핵심','기사핵심'], v[0] || '')).trim(),
+    issue: String(getAny(r, ['issue','실태분석','실태 분석'], v[1] || '')).trim(),
+    implication: String(getAny(r, ['implication','시사점'], v[2] || '')).trim(),
+    policy: String(getAny(r, ['policy','관련 충남 정책','관련충남정책','관련 정책'], v[3] || '')).trim(),
+    intro: String(getAny(r, ['intro','서론'], v[4] || '')).trim(),
+    support1: String(getAny(r, ['support1','지원방안 1','지원방안1'], v[5] || '')).trim(),
+    support2: String(getAny(r, ['support2','지원방안 2','지원방안2'], v[6] || '')).trim(),
+    support3: String(getAny(r, ['support3','지원방안 3','지원방안3'], v[7] || '')).trim(),
+    support4: String(getAny(r, ['support4','지원방안 4','지원방안4'], v[8] || '')).trim(),
+    support5: String(getAny(r, ['support5','지원방안 5','지원방안5'], v[9] || '')).trim(),
+    effect: String(getAny(r, ['effect','기대효과'], v[10] || '')).trim()
+  };
+}
+function normalizeGovRow(r) {
+  const v = rawRowVals(r);
+  let taskNo = String(getAny(r, ['taskNo','task_no','국정과제번호','과제번호','번호'], '')).trim();
+  let title = String(getAny(r, ['title','국정과제','과제명','제목'], '')).trim();
+  let subNo = String(getAny(r, ['subNo','sub_no','하위과제번호','실천과제번호','세부번호'], '')).trim();
+  let subTitle = String(getAny(r, ['subTitle','sub_title','하위과제','실천과제','세부과제'], '')).trim();
+  let summary = String(getAny(r, ['summary','핵심내용','핵심 내용','요약','내용'], '')).trim();
+  let relatedTopics = String(getAny(r, ['relatedTopics','related_topics','연결주제','연결 주제','관련주제','관련 주제'], '')).trim();
+  let memo = String(getAny(r, ['memo','메모'], '')).trim();
+
+  if (!taskNo && /^(55|89|99|100|101|102)$/.test(v[0] || '')) taskNo = v[0];
+  if (!title && taskNo && v[1] && !/^\d+-/.test(v[1])) title = v[1];
+  if (!subNo && /^\d+-\d+/.test(v[2] || '')) subNo = v[2];
+  if (!subTitle && subNo && v[3]) subTitle = v[3];
+  if (!summary && v[4]) summary = v[4];
+  if (!relatedTopics && v[5]) relatedTopics = v[5];
+  if (!taskNo && subNo) taskNo = subNo.split('-')[0];
+  if (!title && taskNo) title = GOV_TITLES[taskNo] || ('국정과제 ' + taskNo);
+  if (!relatedTopics && subNo) relatedTopics = GOV_RELATED[subNo] || '';
+  return { taskNo, title, subNo, subTitle, summary, relatedTopics, memo };
+}
+function openGovTaskDetail(taskNo) {
+  const groupMap = groupBy(DB.govTasks, r => String(r.taskNo || '').trim());
+  const keys = Object.keys(groupMap);
+  const idx = Math.max(0, keys.indexOf(String(taskNo)));
+  const c = TOPIC_COLORS[(idx + 1) % TOPIC_COLORS.length];
+  const rows = DB.govTasks.filter(r => String(r.taskNo || '').trim() === String(taskNo));
+  const title = rows[0] && rows[0].title ? rows[0].title : `국정과제 ${taskNo}`;
+  document.getElementById('govTasksContent').innerHTML = `
+    <div class="btns"><button class="ghost" onclick="openGovTasks()">← 국정과제 목록</button></div>
+    <h2 style="color:${c[0]}">${escapeHtml(taskNo)}. ${escapeHtml(title)}</h2>
+    ${rows.map(r => {
+      const related = r.relatedTopics || GOV_RELATED[r.subNo] || '';
+      const chips = splitList(related).map(x => `<span class="gov-chip" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">${escapeHtml(x)}</span>`).join('');
+      return `<div class="plan-section" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]};border-color:${c[2]}">
+        <div class="plan-section-title" style="color:${c[0]}"><span class="plan-code">${escapeHtml(r.subNo || '')}</span> ${escapeHtml(r.subTitle || '')}</div>
+        ${r.summary ? `<div class="gov-label">핵심 내용</div><div class="gov-core-text">${escapeHtml(r.summary).replace(/\n/g,'<br>')}</div>` : ''}
+        ${related ? `<div class="gov-label">연결 주제</div><div class="gov-chip-wrap">${chips}</div>` : ''}
+        ${r.memo ? `<div class="small">메모: ${escapeHtml(r.memo)}</div>` : ''}
+      </div>`;
+    }).join('')}
+  `;
+}
+function renderNewsBlock(title, text) {
+  if (!String(text || '').trim()) return '';
+  const key = String(title || '').replace(/\s+/g, '');
+  let cls = 'news-block';
+  if (key.includes('실태분석')) cls += ' news-issue';
+  else if (key.includes('시사점')) cls += ' news-implication';
+  else if (key.includes('관련충남정책')) cls += ' news-policy';
+  else if (key.includes('서론')) cls += ' news-intro';
+  else if (key.includes('지원방안')) cls += ' news-support';
+  else if (key.includes('기대효과')) cls += ' news-effect';
+  return `<div class="${cls}"><span class="news-block-title">${escapeHtml(title)}</span><p>${escapeHtml(text).replace(/\n/g, '<br>')}</p></div>`;
+}
+async function loadFromSheet() {
+  const loading = document.getElementById('loading');
+  if (!WEB_APP_URL || WEB_APP_URL.includes('여기에_')) {
+    loading.innerHTML = 'HTML 코드의 <b>WEB_APP_URL</b>에 Apps Script 웹앱 URL을 먼저 넣어주세요.';
+    return;
+  }
+  try {
+    loading.innerHTML = '구글시트 데이터를 불러오는 중입니다...';
+    const res = await fetch(WEB_APP_URL + '?action=read&v=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data && data.ok === false) throw new Error(data.error || 'Apps Script에서 오류를 반환했습니다.');
+    DB = normalizeData(data || {});
+    localStorage.setItem('memoryAppCache', JSON.stringify(DB));
+    renderHome();
+  } catch (err) {
+    const cached = localStorage.getItem('memoryAppCache');
+    if (cached) {
+      DB = JSON.parse(cached);
+      renderHome();
+      loading.innerHTML = '구글시트 연결에 실패해서 마지막 저장 데이터를 불러왔습니다.<br>' + escapeHtml(String(err));
+    } else {
+      loading.innerHTML = '데이터를 불러오지 못했습니다. Apps Script 배포 URL, 배포 권한, 시트 연결을 확인하세요.<br>' + escapeHtml(String(err));
+    }
+  }
 }
 
 loadFromSheet();
