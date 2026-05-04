@@ -1142,6 +1142,24 @@
   }
 </style>
 
+
+<style id="quiz-description-hint-style">
+  .quiz-desc {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: #f8fbff;
+    border: 1px solid #dceaff;
+    color: #4f5870;
+    font-size: 14px;
+    line-height: 1.65;
+    word-break: keep-all;
+  }
+  .quiz-desc.hidden { display: none !important; }
+  @media (max-width: 640px) {
+    .quiz-desc { font-size: 13px; padding: 10px 12px; }
+  }
+</style>
 </head>
 <body>
 <div class="app">
@@ -1198,12 +1216,14 @@
     <div class="card">
       <div class="small" id="quizTopic"></div>
       <div class="hint" id="quizHint"></div>
+      <div class="quiz-desc hidden" id="quizDesc"></div>
     </div>
     <br>
     <input id="quizInput" placeholder="떠오르는 키워드를 입력하세요" onkeydown="if(event.key==='Enter')checkAnswer()" />
     <br><br>
     <div class="btns">
       <button class="primary" onclick="checkAnswer()">정답 확인</button>
+      <button class="ghost" onclick="showQuizDescription()">힌트 보기</button>
       <button class="ghost" onclick="showAnswer()">답 보기</button>
       <button class="warn" onclick="markWrong()">틀렸어요</button>
       <button class="soft-blue" id="quizWrongButton" onclick="openWrong()">📌 오답노트 0개</button>
@@ -1513,7 +1533,14 @@ function normalizeExtraRow(r) {
 }
 function normalizeQuizRow(r) {
   const v=rowVals(r);
-  return {topicNo:getAny(r,['topicNo','주제번호'],v[0]||''), topic:getAny(r,['topic','주제'],v[1]||''), answer:getAny(r,['answer','keyword','키워드','정답'],v[2]||v[1]||''), hint:getAny(r,['hint','초성','힌트'],v[3]||'')};
+  return {
+    topicNo: getAny(r, ['topicNo','주제번호'], v[0] || ''),
+    topic: getAny(r, ['topic','주제'], v[1] || ''),
+    answer: getAny(r, ['answer','keyword','키워드','정답'], v[2] || v[1] || ''),
+    hint: getAny(r, ['hint','초성','힌트'], v[3] || ''),
+    description: getAny(r, ['description','desc','explanation','뜻','설명','단어설명','키워드설명','힌트설명','설명힌트'], v[4] || ''),
+    wrongMemo: getAny(r, ['wrongMemo','오답메모','wrong_memo'], '')
+  };
 }
 function normalizeWorkPlanRow(r) {
   const v=rowVals(r);
@@ -2072,11 +2099,12 @@ function buildQuizPool() {
       topicNo: q.topicNo,
       topic: q.topic || getTopicTitle(q.topicNo),
       answer: q.keyword || q.answer,
-      hint: q.hint || chosung(q.keyword || q.answer || '')
+      hint: q.hint || chosung(q.keyword || q.answer || ''),
+      description: q.description || q.desc || q.explanation || q['설명'] || q['뜻'] || ''
     })).filter(q => q.answer);
   }
   const pool = [];
-  DB.topics.forEach(t => splitList(t.keywords).forEach(k => pool.push({topicNo:t.no, topic:t.topic, answer:k, hint:chosung(k)})));
+  DB.topics.forEach(t => splitList(t.keywords).forEach(k => pool.push({topicNo:t.no, topic:t.topic, answer:k, hint:chosung(k), description:''})));
   return pool;
 }
 
@@ -2085,6 +2113,8 @@ function nextQuiz() {
   currentQuiz = quizPool[Math.floor(Math.random() * quizPool.length)];
   document.getElementById('quizTopic').textContent = currentQuiz.topic ? `주제: ${currentQuiz.topic}` : '';
   document.getElementById('quizHint').textContent = currentQuiz.hint || chosung(currentQuiz.answer);
+  const descEl = document.getElementById('quizDesc');
+  if (descEl) { descEl.classList.add('hidden'); descEl.innerHTML = ''; }
   document.getElementById('quizInput').value = '';
   document.getElementById('quizResult').classList.add('hidden');
   document.getElementById('quizResult').innerHTML = '';
@@ -2105,6 +2135,17 @@ function checkAnswer() {
     addWrong(currentQuiz);
   }
   renderHomeStat();
+}
+
+function showQuizDescription() {
+  if (!currentQuiz) return;
+  const descEl = document.getElementById('quizDesc');
+  if (!descEl) return;
+  const text = String(currentQuiz.description || '').trim();
+  descEl.classList.remove('hidden');
+  descEl.innerHTML = text
+    ? escapeHtml(text).replace(/\n/g, '<br>')
+    : '아직 설명 힌트가 없습니다. quizKeywords 시트에 description 또는 설명 열을 추가해 주세요.';
 }
 
 function showAnswer() {
@@ -2135,7 +2176,8 @@ function renderWrongList() {
   list.innerHTML = wrong.map((w, i) => `<div class="card wrong-item">
     <div class="topic-title">${escapeHtml(w.answer)}</div>
     <div class="small">${escapeHtml(w.topic || '')}</div>
-    <div class="small">힌트: ${escapeHtml(w.hint || chosung(w.answer))}</div><br>
+    <div class="small">힌트: ${escapeHtml(w.hint || chosung(w.answer))}</div>
+    ${w.description ? `<div class="small">설명: ${escapeHtml(w.description)}</div>` : ''}<br>
     <button class="ghost" onclick="deleteWrong(${i})">삭제</button>
   </div>`).join('');
 }
@@ -2145,7 +2187,7 @@ function saveWrong(list) { localStorage.setItem('memoryWrongKeywords', JSON.stri
 function addWrong(q) {
   const list = getWrong();
   if (!list.some(x => normalizeAnswer(x.answer) === normalizeAnswer(q.answer))) {
-    list.push({topicNo:q.topicNo, topic:q.topic, answer:q.answer, hint:q.hint || chosung(q.answer)});
+    list.push({topicNo:q.topicNo, topic:q.topic, answer:q.answer, hint:q.hint || chosung(q.answer), description:q.description || ''});
     saveWrong(list);
   }
 }
