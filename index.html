@@ -1,5 +1,3 @@
-
-
 <!doctype html>
 <html lang="ko">
 <head>
@@ -1048,6 +1046,28 @@
 .news-support-grid .news-block { margin: 0 !important; }
 .plan-card { margin-bottom: 6px !important; }
 
+
+
+/* Quiz wrong-note quick status */
+.quiz-wrong-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(224, 240, 255, 0.9);
+  border: 1px solid rgba(151, 199, 255, 0.9);
+  color: #2866b6;
+  font-weight: 800;
+  box-shadow: 0 8px 18px rgba(74, 144, 226, 0.10);
+}
+#quizWrongButton {
+  background: linear-gradient(135deg, #dfeeff, #f2e9ff);
+  color: #315a9f;
+  border: 1px solid #bcd6ff;
+}
+
 </style>
 
 
@@ -1172,6 +1192,7 @@
         <button class="home-back" onclick="showView('home')">🏠 첫페이지</button>
         <h2 id="quizTitle">키워드 초성 퀴즈</h2>
         <div class="sub">초성을 보고 핵심 키워드를 떠올려 보세요. 틀린 것은 오답노트에 저장됩니다.</div>
+        <div id="quizWrongCount" class="quiz-wrong-count">📌 현재 오답 0개</div>
       </div>
     </div>
     <div class="card">
@@ -1185,6 +1206,7 @@
       <button class="primary" onclick="checkAnswer()">정답 확인</button>
       <button class="ghost" onclick="showAnswer()">답 보기</button>
       <button class="warn" onclick="markWrong()">틀렸어요</button>
+      <button class="soft-blue" id="quizWrongButton" onclick="openWrong()">📌 오답노트 0개</button>
       <button class="good" onclick="nextQuiz()">다음 문제</button>
     </div>
     <div id="quizResult" class="answer hidden"></div>
@@ -3852,5 +3874,286 @@ async function initApp() {
 // 최종 초기화는 모든 보정 코드가 올라온 뒤 한 번만 실행합니다.
 initApp();
 </script>
+
+<script>
+// --- Quiz wrong note count + strict answer check patch ---
+(function(){
+  function quizNormalizeStrict(value) {
+    return String(value || '')
+      .replace(/\s+/g, '')
+      .replace(/[·ㆍ・\-]/g, '')
+      .toLowerCase()
+      .trim();
+  }
+
+  window.updateQuizWrongCount = function() {
+    let count = 0;
+    try { count = Array.isArray(getWrong()) ? getWrong().length : 0; } catch(e) { count = 0; }
+    const label = `📌 현재 오답 ${count}개`;
+    const shortLabel = `📌 오답노트 ${count}개`;
+    const countEl = document.getElementById('quizWrongCount');
+    const btnEl = document.getElementById('quizWrongButton');
+    if (countEl) countEl.textContent = label;
+    if (btnEl) btnEl.textContent = shortLabel;
+  };
+
+  // 정답 판정: 빈칸 불가, 띄어쓰기/대소문자만 무시, 부분 포함 정답 처리 금지
+  window.checkAnswer = function() {
+    if (!window.currentQuiz && typeof currentQuiz === 'undefined') return;
+    const q = window.currentQuiz || currentQuiz;
+    if (!q) return;
+
+    const inputEl = document.getElementById('quizInput');
+    const result = document.getElementById('quizResult');
+    const rawInput = inputEl ? inputEl.value : '';
+    const input = quizNormalizeStrict(rawInput);
+    const answer = quizNormalizeStrict(q.answer);
+
+    if (result) result.classList.remove('hidden');
+
+    if (!input) {
+      if (result) result.innerHTML = `답을 먼저 입력해 주세요.`;
+      updateQuizWrongCount();
+      return;
+    }
+
+    if (input === answer) {
+      if (result) result.innerHTML = `정답입니다!<br>정답: ${escapeHtml(q.answer)}`;
+      removeWrong(q.answer);
+    } else {
+      if (result) result.innerHTML = `아쉬워요.<br>정답: ${escapeHtml(q.answer)}`;
+      addWrong(q);
+    }
+
+    updateQuizWrongCount();
+    if (typeof renderHomeStat === 'function') renderHomeStat();
+  };
+
+  const baseOpenQuiz = window.openQuiz;
+  if (typeof baseOpenQuiz === 'function') {
+    window.openQuiz = function(wrongOnly) {
+      baseOpenQuiz(wrongOnly);
+      updateQuizWrongCount();
+    };
+  }
+
+  const baseNextQuiz = window.nextQuiz;
+  if (typeof baseNextQuiz === 'function') {
+    window.nextQuiz = function() {
+      baseNextQuiz();
+      updateQuizWrongCount();
+    };
+  }
+
+  const baseMarkWrong = window.markWrong;
+  if (typeof baseMarkWrong === 'function') {
+    window.markWrong = function() {
+      baseMarkWrong();
+      updateQuizWrongCount();
+    };
+  }
+
+  const baseOpenWrong = window.openWrong;
+  if (typeof baseOpenWrong === 'function') {
+    window.openWrong = function() {
+      baseOpenWrong();
+      updateQuizWrongCount();
+    };
+  }
+
+  const baseDeleteWrong = window.deleteWrong;
+  if (typeof baseDeleteWrong === 'function') {
+    window.deleteWrong = function(i) {
+      baseDeleteWrong(i);
+      updateQuizWrongCount();
+    };
+  }
+
+  const baseClearWrong = window.clearWrong;
+  if (typeof baseClearWrong === 'function') {
+    window.clearWrong = function() {
+      baseClearWrong();
+      updateQuizWrongCount();
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', updateQuizWrongCount);
+  setTimeout(updateQuizWrongCount, 300);
+})();
+</script>
+
+
+<style id="quiz-wrong-header-position-fix">
+  /* 퀴즈 화면: 오답노트 버튼은 첫페이지 옆, 오답 개수는 우상단 */
+  #quiz .top {
+    position: relative !important;
+    display: block !important;
+    padding-right: 150px !important;
+  }
+  #quizNavRow {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    flex-wrap: wrap !important;
+    margin-bottom: 14px !important;
+  }
+  #quizNavRow .home-back,
+  #quizNavRow #quizWrongButton {
+    margin: 0 !important;
+  }
+  #quizWrongButton {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 42px !important;
+    padding: 0 16px !important;
+    border-radius: 18px !important;
+    font-weight: 900 !important;
+    white-space: nowrap !important;
+  }
+  #quizWrongCount {
+    position: absolute !important;
+    top: 2px !important;
+    right: 0 !important;
+    margin: 0 !important;
+    padding: 8px 13px !important;
+    min-width: 92px !important;
+    justify-content: center !important;
+    font-size: 14px !important;
+    white-space: nowrap !important;
+    z-index: 2 !important;
+  }
+  @media (max-width: 640px) {
+    #quiz .top {
+      padding-right: 112px !important;
+    }
+    #quizNavRow {
+      gap: 8px !important;
+      margin-bottom: 12px !important;
+    }
+    #quizNavRow .home-back,
+    #quizNavRow #quizWrongButton {
+      min-height: 38px !important;
+      padding: 0 12px !important;
+      font-size: 13px !important;
+      border-radius: 16px !important;
+    }
+    #quizWrongCount {
+      top: 2px !important;
+      right: 0 !important;
+      min-width: 82px !important;
+      padding: 7px 10px !important;
+      font-size: 12.5px !important;
+    }
+  }
+</style>
+<script>
+// --- Quiz header layout patch: move wrong-note button next to home, count to top-right ---
+(function(){
+  function getWrongCountSafe(){
+    try { return Array.isArray(getWrong()) ? getWrong().length : 0; }
+    catch(e) { return 0; }
+  }
+
+  window.arrangeQuizHeader = function(){
+    const quiz = document.getElementById('quiz');
+    if (!quiz) return;
+    const top = quiz.querySelector('.top');
+    const inner = top ? top.querySelector('div') : null;
+    const homeBtn = top ? top.querySelector('.home-back') : null;
+    const wrongBtn = document.getElementById('quizWrongButton');
+    const countEl = document.getElementById('quizWrongCount');
+    if (!top || !inner || !homeBtn || !wrongBtn || !countEl) return;
+
+    let row = document.getElementById('quizNavRow');
+    if (!row) {
+      row = document.createElement('div');
+      row.id = 'quizNavRow';
+      inner.insertBefore(row, inner.firstChild);
+    }
+
+    if (homeBtn.parentElement !== row) row.appendChild(homeBtn);
+    if (wrongBtn.parentElement !== row) row.appendChild(wrongBtn);
+    if (countEl.parentElement !== top) top.appendChild(countEl);
+
+    updateQuizWrongCount();
+  };
+
+  window.updateQuizWrongCount = function(){
+    const count = getWrongCountSafe();
+    const countEl = document.getElementById('quizWrongCount');
+    const btnEl = document.getElementById('quizWrongButton');
+    if (countEl) countEl.textContent = `오답 ${count}개`;
+    if (btnEl) btnEl.textContent = '📌 오답노트';
+  };
+
+  const baseOpenQuiz = window.openQuiz;
+  if (typeof baseOpenQuiz === 'function') {
+    window.openQuiz = function(wrongOnly){
+      baseOpenQuiz(wrongOnly);
+      setTimeout(arrangeQuizHeader, 0);
+      setTimeout(updateQuizWrongCount, 20);
+    };
+  }
+
+  const baseNextQuiz = window.nextQuiz;
+  if (typeof baseNextQuiz === 'function') {
+    window.nextQuiz = function(){
+      baseNextQuiz();
+      arrangeQuizHeader();
+      updateQuizWrongCount();
+    };
+  }
+
+  const baseCheckAnswer = window.checkAnswer;
+  if (typeof baseCheckAnswer === 'function') {
+    window.checkAnswer = function(){
+      baseCheckAnswer();
+      arrangeQuizHeader();
+      updateQuizWrongCount();
+    };
+  }
+
+  const baseMarkWrong = window.markWrong;
+  if (typeof baseMarkWrong === 'function') {
+    window.markWrong = function(){
+      baseMarkWrong();
+      arrangeQuizHeader();
+      updateQuizWrongCount();
+    };
+  }
+
+  const baseOpenWrong = window.openWrong;
+  if (typeof baseOpenWrong === 'function') {
+    window.openWrong = function(){
+      baseOpenWrong();
+      updateQuizWrongCount();
+    };
+  }
+
+  const baseDeleteWrong = window.deleteWrong;
+  if (typeof baseDeleteWrong === 'function') {
+    window.deleteWrong = function(i){
+      baseDeleteWrong(i);
+      updateQuizWrongCount();
+    };
+  }
+
+  const baseClearWrong = window.clearWrong;
+  if (typeof baseClearWrong === 'function') {
+    window.clearWrong = function(){
+      baseClearWrong();
+      updateQuizWrongCount();
+    };
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    arrangeQuizHeader();
+    updateQuizWrongCount();
+  });
+  setTimeout(function(){ arrangeQuizHeader(); updateQuizWrongCount(); }, 300);
+})();
+</script>
+
 </body>
 </html>
