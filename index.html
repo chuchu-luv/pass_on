@@ -1160,6 +1160,33 @@
     .quiz-desc { font-size: 13px; padding: 10px 12px; }
   }
 </style>
+
+<style id="quiz-hint-pink-button-fix">
+  /* 퀴즈 화면: 힌트 보기 버튼 파스텔 핑크 + 크기 완화 */
+  button[onclick="showQuizDescription()"] {
+    background: linear-gradient(135deg, #fff4f8, #f9e6ef) !important;
+    border: 1px solid #f1d3e1 !important;
+    color: #b45a86 !important;
+    box-shadow: 0 2px 8px rgba(216, 143, 178, 0.10) !important;
+    font-weight: 800 !important;
+    font-size: 16px !important;
+    padding: 8px 12px !important;
+    border-radius: 16px !important;
+  }
+  button[onclick="showQuizDescription()"]:hover {
+    filter: brightness(1.01);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(216, 143, 178, 0.12) !important;
+  }
+  @media (max-width: 640px) {
+    button[onclick="showQuizDescription()"] {
+      font-size: 15px !important;
+      padding: 7px 11px !important;
+      border-radius: 15px !important;
+    }
+  }
+</style>
+
 </head>
 <body>
 <div class="app">
