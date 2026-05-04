@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html lang="ko">
 <head>
@@ -2967,7 +2969,888 @@ function openGovTaskDetail(taskNo) {
   `;
 }
 
-loadFromSheet();
+
+/* === FINAL GOV FIX 2026-05-03: 국정과제 핵심내용/연결주제 중복 방지 === */
+function normalizeGovRow(r) {
+  const v = rawRowVals(r);
+
+  let taskNo = String(getAny(r, ['taskNo','task_no','국정과제번호','국정과제 번호','과제번호','과제 번호','번호'], '')).trim();
+  let title = String(getAny(r, ['title','국정과제','국정과제명','과제명','제목'], '')).trim();
+  let subNo = String(getAny(r, ['subNo','sub_no','하위과제번호','하위 과제 번호','실천과제번호','세부번호','세부 번호'], '')).trim();
+  let subTitle = String(getAny(r, ['subTitle','sub_title','하위과제','하위 과제','실천과제','실천 과제','세부과제','세부 과제','세부과제명','세부 과제명'], '')).trim();
+  let summary = String(getAny(r, ['summary','핵심내용','핵심 내용','주요내용','주요 내용','내용','요약'], '')).trim();
+  let relatedTopics = String(getAny(r, ['relatedTopics','related_topics','연결주제','연결 주제','관련주제','관련 주제','키워드','keywords','keyword'], '')).trim();
+  let memo = String(getAny(r, ['memo','메모','비고'], '')).trim();
+
+  if (!taskNo && /^(55|89|99|100|101|102)$/.test(v[0] || '')) taskNo = v[0];
+  if (!title && taskNo && v[1] && !/^\d+-\d+/.test(v[1])) title = v[1];
+
+  // 열 순서 자동 보정
+  // 형태 1: 번호 / 국정과제명 / 세부번호 / 세부과제명 / 핵심내용 / 연결주제
+  if (!subNo && /^\d+-\d+/.test(v[2] || '')) {
+    subNo = v[2];
+    if (!subTitle && v[3]) subTitle = v[3];
+    if (!summary && v[4]) summary = v[4];
+    if (!relatedTopics && v[5]) relatedTopics = v[5];
+    if (!memo && v[6]) memo = v[6];
+  }
+
+  // 형태 2: 번호 / 국정과제명 / 세부과제명 / 핵심내용 / 연결주제
+  if (!subNo && !subTitle && v[2] && !/^\d+-\d+/.test(v[2])) {
+    subTitle = v[2];
+    if (!summary && v[3]) summary = v[3];
+    if (!relatedTopics && v[4]) relatedTopics = v[4];
+    if (!memo && v[5]) memo = v[5];
+  }
+
+  // 형태 3: 번호 / 국정과제명 / 핵심내용 / 연결주제
+  if (!subTitle && !summary && v[2]) {
+    summary = v[2];
+    if (!relatedTopics && v[3]) relatedTopics = v[3];
+  }
+
+  if (!taskNo && subNo) taskNo = subNo.split('-')[0];
+  if (!title && taskNo) title = GOV_TITLES[taskNo] || ('국정과제 ' + taskNo);
+
+  // 핵심내용과 연결주제가 같으면 잘못 읽은 것이므로 연결주제는 기본 매핑값으로 대체
+  if (normalizeCompareText(relatedTopics) === normalizeCompareText(summary)) {
+    relatedTopics = '';
+  }
+
+  if (!relatedTopics && subNo) relatedTopics = GOV_RELATED[subNo] || '';
+
+  return { taskNo, title, subNo, subTitle, summary, relatedTopics, memo };
+}
+
+function normalizeCompareText(text) {
+  return String(text || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/[\s,，、·ㆍ|/]+/g, ' ')
+    .trim();
+}
+
+function openGovTaskDetail(taskNo) {
+  const groupMap = groupBy(DB.govTasks, r => String(r.taskNo || '').trim());
+  const keys = Object.keys(groupMap);
+  const idx = Math.max(0, keys.indexOf(String(taskNo)));
+  const c = TOPIC_COLORS[(idx + 1) % TOPIC_COLORS.length];
+  const rows = DB.govTasks.filter(r => String(r.taskNo || '').trim() === String(taskNo));
+  const title = rows[0] && rows[0].title ? rows[0].title : `국정과제 ${taskNo}`;
+
+  document.getElementById('govTasksContent').innerHTML = `
+    <div class="btns"><button class="ghost" onclick="openGovTasks()">← 국정과제 목록</button></div>
+    <h2 style="color:${c[0]}">${escapeHtml(taskNo)}. ${escapeHtml(title)}</h2>
+    ${rows.map((r, index) => {
+      const displaySubNo = r.subNo || `${taskNo}-${index + 1}`;
+      let related = r.relatedTopics || GOV_RELATED[displaySubNo] || GOV_RELATED[r.subNo] || '';
+      if (normalizeCompareText(related) === normalizeCompareText(r.summary)) related = GOV_RELATED[displaySubNo] || '';
+      const chips = splitList(related).map(x => `<span class="gov-chip" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">${escapeHtml(x)}</span>`).join('');
+      return `<div class="plan-section" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]};border-color:${c[2]}">
+        <div class="plan-section-title" style="color:${c[0]}"><span class="plan-code">${escapeHtml(displaySubNo)}</span> ${escapeHtml(r.subTitle || '')}</div>
+        ${r.summary ? `<div class="gov-label">핵심 내용</div><div class="gov-core-text">${escapeHtml(r.summary).replace(/\n/g,'<br>')}</div>` : ''}
+        ${related ? `<div class="gov-label">연결 주제</div><div class="gov-chip-wrap">${chips}</div>` : ''}
+        ${r.memo ? `<div class="small">메모: ${escapeHtml(r.memo)}</div>` : ''}
+      </div>`;
+    }).join('')}
+  `;
+}
+
+
+/* === FINAL PATCH 2026-05-04: 화면 상태 유지 + 기억 메모 중복 로딩 제거 === */
+const APP_LAST_STATE_KEY = 'memoryAppLastState_v5';
+let RESTORING_STATE = false;
+let DID_RESTORE_ON_LOAD = false;
+
+function getAppState() {
+  try { return JSON.parse(localStorage.getItem(APP_LAST_STATE_KEY) || '{}') || {}; }
+  catch(e) { return {}; }
+}
+function setAppState(patch) {
+  if (RESTORING_STATE) return;
+  const prev = getAppState();
+  localStorage.setItem(APP_LAST_STATE_KEY, JSON.stringify(Object.assign({}, prev, patch || {}, { savedAt: Date.now() })));
+}
+function clearDetailStateIfNeeded(viewId) {
+  if (viewId === 'home') setAppState({ view: 'home', detailNo: '', sectionKey: '', govTaskNo: '', workPolicy: '', newsIndex: '' });
+}
+
+const __baseShowView = showView;
+showView = function(id) {
+  __baseShowView(id);
+  setAppState({ view: id });
+  clearDetailStateIfNeeded(id);
+};
+
+const __baseOpenDetail = openDetail;
+openDetail = function(no) {
+  __baseOpenDetail(no);
+  setAppState({ view: 'detail', detailNo: String(no || ''), sectionKey: 'problem' });
+};
+
+const __baseShowSection = showSection;
+showSection = function(key) {
+  __baseShowSection(key);
+  if (currentTopic) setAppState({ view: 'detail', detailNo: String(currentTopic.no || ''), sectionKey: String(key || '') });
+};
+
+const __baseOpenWorkPlan = openWorkPlan;
+openWorkPlan = function() {
+  __baseOpenWorkPlan();
+  setAppState({ view: 'workPlan', workPolicy: '' });
+};
+
+const __baseOpenWorkPlanDetail = openWorkPlanDetail;
+openWorkPlanDetail = function(policy) {
+  __baseOpenWorkPlanDetail(policy);
+  setAppState({ view: 'workPlan', workPolicy: String(policy || '') });
+};
+
+const __baseOpenGovTasks = openGovTasks;
+openGovTasks = function() {
+  __baseOpenGovTasks();
+  setAppState({ view: 'govTasks', govTaskNo: '' });
+};
+
+const __baseOpenGovTaskDetail = openGovTaskDetail;
+openGovTaskDetail = function(taskNo) {
+  __baseOpenGovTaskDetail(taskNo);
+  setAppState({ view: 'govTasks', govTaskNo: String(taskNo || '') });
+};
+
+const __baseOpenNews = openNews;
+openNews = function() {
+  __baseOpenNews();
+  setAppState({ view: 'news', newsIndex: '' });
+};
+
+const __baseOpenNewsDetail = openNewsDetail;
+openNewsDetail = function(index) {
+  __baseOpenNewsDetail(index);
+  setAppState({ view: 'news', newsIndex: String(index) });
+};
+
+const __baseOpenFuture2030 = openFuture2030;
+openFuture2030 = function() {
+  __baseOpenFuture2030();
+  setAppState({ view: 'future2030' });
+};
+
+const __baseOpenWrong = openWrong;
+openWrong = function() {
+  __baseOpenWrong();
+  setAppState({ view: 'wrong' });
+};
+
+const __baseStartQuiz = (typeof startQuiz !== 'undefined') ? startQuiz : function() { openQuiz(false); };
+startQuiz = function() {
+  __baseStartQuiz();
+  setAppState({ view: 'quiz' });
+};
+
+// 기억할 것 페이지는 이미 처음 로딩한 DB.appMemos로 바로 보여주고,
+// 새로고침 버튼이나 추가/수정/삭제 때만 서버를 다시 확인합니다.
+openRememberPage = function() {
+  showView('rememberPage');
+  renderRememberList();
+  setAppState({ view: 'rememberPage' });
+};
+
+function restoreLastAppState() {
+  if (DID_RESTORE_ON_LOAD) return;
+  DID_RESTORE_ON_LOAD = true;
+  const state = getAppState();
+  const view = state.view || 'home';
+
+  RESTORING_STATE = true;
+  try {
+    if (view === 'detail' && state.detailNo) {
+      __baseOpenDetail(Number(state.detailNo));
+      if (state.sectionKey) __baseShowSection(state.sectionKey);
+    } else if (view === 'rememberPage') {
+      __baseShowView('rememberPage');
+      renderRememberList();
+    } else if (view === 'workPlan') {
+      __baseOpenWorkPlan();
+      if (state.workPolicy) __baseOpenWorkPlanDetail(state.workPolicy);
+    } else if (view === 'govTasks') {
+      __baseOpenGovTasks();
+      if (state.govTaskNo) __baseOpenGovTaskDetail(state.govTaskNo);
+    } else if (view === 'news') {
+      __baseOpenNews();
+      if (state.newsIndex !== '' && state.newsIndex != null) __baseOpenNewsDetail(Number(state.newsIndex));
+    } else if (view === 'future2030') {
+      __baseOpenFuture2030();
+    } else if (view === 'wrong') {
+      __baseOpenWrong();
+    } else if (view === 'quiz') {
+      __baseStartQuiz();
+    } else {
+      __baseShowView('home');
+    }
+  } finally {
+    RESTORING_STATE = false;
+  }
+}
+
+async function initApp() {
+  const loading = document.getElementById('loading');
+  const cached = localStorage.getItem('memoryAppCache');
+
+  // 1. 캐시가 있으면 즉시 화면을 먼저 복구합니다. 그래서 창을 바꿨다 돌아와도 첫페이지로 튀지 않습니다.
+  if (cached) {
+    try {
+      DB = JSON.parse(cached);
+      renderHome();
+      restoreLastAppState();
+    } catch(e) {
+      console.warn(e);
+    }
+  }
+
+  // 2. 뒤에서 구글시트 최신 데이터는 한 번만 다시 가져옵니다.
+  if (!WEB_APP_URL || WEB_APP_URL.includes('여기에_')) {
+    if (loading && !cached) loading.innerHTML = 'HTML 코드의 <b>WEB_APP_URL</b>에 Apps Script 웹앱 URL을 먼저 넣어주세요.';
+    return;
+  }
+
+  try {
+    if (loading && !cached) loading.innerHTML = '구글시트 데이터를 불러오는 중입니다...';
+    const res = await fetch(WEB_APP_URL + '?action=read&v=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data && data.ok === false) throw new Error(data.error || 'Apps Script에서 오류를 반환했습니다.');
+    DB = normalizeData(data || {});
+    localStorage.setItem('memoryAppCache', JSON.stringify(DB));
+    renderHome();
+
+    // 최초 진입 때만 마지막 위치 복구. 이미 사용자가 보고 있으면 위치를 덮어쓰지 않습니다.
+    if (!cached) restoreLastAppState();
+    else {
+      const state = getAppState();
+      // 최신 데이터 반영 후 현재 페이지 내용만 조용히 다시 그림
+      if (state.view === 'rememberPage') renderRememberList();
+      if (state.view === 'detail' && state.detailNo) {
+        RESTORING_STATE = true;
+        try { __baseOpenDetail(Number(state.detailNo)); if (state.sectionKey) __baseShowSection(state.sectionKey); }
+        finally { RESTORING_STATE = false; }
+      }
+    }
+  } catch (err) {
+    console.warn(err);
+    if (!cached && loading) {
+      loading.innerHTML = '데이터를 불러오지 못했습니다. Apps Script 배포 URL, 배포 권한, 시트 연결을 확인하세요.<br>' + escapeHtml(String(err));
+    }
+  }
+}
+
+
+
+/* === FINAL PATCH: 기억 메모 수정/삭제 버튼 완전 안정화 === */
+function rememberDomIdBy(id, memo) {
+  const safe = normalizeAppMemoSafe({ id: id || '', memo: memo || '' });
+  const key = safe.key || safe.id || '';
+  return 'remember-' + String(key).replace(/[^a-zA-Z0-9_-]/g,'').slice(0,40);
+}
+function findRememberMemo(id, memo) {
+  const targetId = String(id || '').trim();
+  const targetMemo = String(memo || '').trim();
+  const entries = getRememberEntries();
+  return entries.find(x => {
+    const itemId = String(x.id || x.key || '').trim();
+    const itemMemo = String(x.memo || '').trim();
+    if (targetId && itemId === targetId) return true;
+    if (targetMemo && itemMemo === targetMemo) return true;
+    return false;
+  }) || null;
+}
+function editRememberMemo(idOrIndex, memoEncoded) {
+  let id = '';
+  let oldMemo = '';
+  if (typeof memoEncoded !== 'undefined') {
+    id = String(idOrIndex || '').trim();
+    oldMemo = decodeJsArg(memoEncoded);
+  } else {
+    const entries = getRememberEntries();
+    const m = entries[Number(idOrIndex)];
+    if (m) {
+      id = String(m.id || m.key || '').trim();
+      oldMemo = String(m.memo || '').trim();
+    }
+  }
+
+  const found = findRememberMemo(id, oldMemo);
+  if (found) {
+    id = String(found.id || found.key || id || '').trim();
+    oldMemo = String(found.memo || oldMemo || '').trim();
+  }
+
+  if (!oldMemo) {
+    alert('수정할 메모를 찾지 못했습니다. 새로고침 후 다시 눌러 주세요.');
+    return;
+  }
+
+  const domId = rememberDomIdBy(id, oldMemo);
+  const card = document.getElementById(domId);
+  if (!card) {
+    alert('수정할 메모 카드를 찾지 못했습니다. 새로고침 후 다시 눌러 주세요.');
+    return;
+  }
+
+  const safeId = encodeJsArg(id);
+  const safeOldMemo = encodeJsArg(oldMemo);
+  card.innerHTML = '<div class="remember-head"><div class="remember-label">메모 수정</div></div>' +
+    '<textarea class="remember-edit" id="remember-edit-box">' + escapeHtml(oldMemo) + '</textarea>' +
+    '<div class="memo-row">' +
+    '<button type="button" class="primary" onclick="saveEditedRememberMemo(\'' + safeId + '\',\'' + safeOldMemo + '\')">저장</button>' +
+    '<button type="button" class="ghost" onclick="renderRememberList()">취소</button>' +
+    '</div>';
+
+  setTimeout(() => {
+    const el = document.getElementById('remember-edit-box');
+    if (el) {
+      el.focus();
+      el.setSelectionRange(el.value.length, el.value.length);
+    }
+  }, 50);
+}
+async function saveEditedRememberMemo(idEncoded, oldMemoEncoded) {
+  const id = decodeJsArg(idEncoded);
+  const oldMemo = decodeJsArg(oldMemoEncoded);
+  const el = document.getElementById('remember-edit-box');
+  const memo = el ? el.value.trim() : '';
+
+  if (!memo) {
+    alert('메모 내용이 비어 있습니다.');
+    return;
+  }
+
+  try {
+    const result = await callMemoApi('updateMemo', { id: id || '', memo, oldMemo });
+    if (!result.ok) throw new Error(result.error || '수정 실패');
+
+    const finalId = result.id || id || '';
+    DB.appMemos = (DB.appMemos || []).map(item => {
+      const n = normalizeAppMemoSafe(item);
+      const itemId = String(n.id || n.key || '').trim();
+      const itemMemo = String(n.memo || '').trim();
+      const matched = finalId && itemId === finalId ? true : itemMemo === oldMemo;
+      return matched ? Object.assign({}, item, { id: finalId, key: finalId || n.key, memo, updatedAt: result.updatedAt || nowLocalString() }) : item;
+    });
+
+    localStorage.setItem('memoryAppCache', JSON.stringify(DB));
+    await refreshRememberMemos(false);
+    renderRememberList();
+  } catch (err) {
+    alert('수정 실패: ' + (err && err.message ? err.message : 'Apps Script 배포와 권한을 확인해 주세요.'));
+    console.warn(err);
+  }
+}
+async function deleteRememberEntry(idOrIndex, memoEncoded) {
+  let id = '';
+  let memo = '';
+  if (typeof memoEncoded !== 'undefined') {
+    id = String(idOrIndex || '').trim();
+    memo = decodeJsArg(memoEncoded);
+  } else {
+    const entries = getRememberEntries();
+    const m = entries[Number(idOrIndex)];
+    if (m) {
+      id = String(m.id || m.key || '').trim();
+      memo = String(m.memo || '').trim();
+    }
+  }
+
+  const found = findRememberMemo(id, memo);
+  if (found) {
+    id = String(found.id || found.key || id || '').trim();
+    memo = String(found.memo || memo || '').trim();
+  }
+
+  if (!memo && !id) {
+    alert('삭제할 메모를 찾지 못했습니다. 새로고침 후 다시 눌러 주세요.');
+    return;
+  }
+  if (!confirm('이 메모를 삭제할까요?')) return;
+
+  try {
+    const result = await callMemoApi('deleteMemo', { id: id || '', memo });
+    if (!result.ok) throw new Error(result.error || '삭제 실패');
+
+    DB.appMemos = (DB.appMemos || []).filter(item => {
+      const n = normalizeAppMemoSafe(item);
+      const itemId = String(n.id || n.key || '').trim();
+      const itemMemo = String(n.memo || '').trim();
+      if (id && itemId === id) return false;
+      if (memo && itemMemo === memo) return false;
+      return true;
+    });
+    localStorage.setItem('memoryAppCache', JSON.stringify(DB));
+    renderRememberList();
+    await refreshRememberMemos(false);
+  } catch (err) {
+    alert('삭제 실패: ' + (err && err.message ? err.message : 'Apps Script 배포와 권한을 확인해 주세요.'));
+    console.warn(err);
+  }
+}
+function nowLocalString() {
+  const d = new Date();
+  const p = n => String(n).padStart(2,'0');
+  return d.getFullYear() + '-' + p(d.getMonth()+1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+}
+
+
+
+/* === FINAL CLEAN PATCH 2026-05-04: 요청 1~5 통합 수정 === */
+function asTextFinal(value) {
+  return String(value == null ? '' : value).trim();
+}
+function headerValueFinal(row, keys) {
+  return asTextFinal(getAny(row, keys, ''));
+}
+function looksLikeGovMainNoFinal(text) {
+  return /^(55|89|99|100|101|102)$/.test(asTextFinal(text));
+}
+function looksLikeGovSubNoFinal(text) {
+  return /^\d{2,3}-\d+$/.test(asTextFinal(text));
+}
+function looksLikeDateFinal(text) {
+  return /^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(asTextFinal(text));
+}
+function normalizeCompareText(text) {
+  return String(text || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/[\s,，、·ㆍ|/]+/g, ' ')
+    .trim();
+}
+function isSameTextFinal(a, b) {
+  const x = normalizeCompareText(a);
+  const y = normalizeCompareText(b);
+  return !!x && !!y && x === y;
+}
+function makeMemoDomKeyFinal(memo) {
+  try { return 'memo_text_' + btoa(unescape(encodeURIComponent(String(memo || '')))).replace(/[^a-zA-Z0-9]/g,'').slice(0,28); }
+  catch(e) { return 'memo_text_' + String(memo || '').replace(/[^a-zA-Z0-9가-힣]/g,'').slice(0,20); }
+}
+
+function normalizeGovRow(r) {
+  const v = rawRowVals(r).map(x => asTextFinal(x));
+
+  let taskNo = headerValueFinal(r, ['taskNo','task_no','mainNo','main_no','국정과제번호','국정과제 번호','과제번호','과제 번호','번호','대과제번호','대과제 번호']);
+  let title = headerValueFinal(r, ['title','taskTitle','task_title','국정과제','국정과제명','국정과제 명','과제명','과제 명','대과제','대과제명','제목']);
+  let subNo = headerValueFinal(r, ['subNo','sub_no','detailNo','detail_no','하위과제번호','하위 과제 번호','실천과제번호','실천 과제 번호','세부번호','세부 번호','세부과제번호','세부 과제 번호']);
+  let subTitle = headerValueFinal(r, ['subTitle','sub_title','detailTitle','detail_title','하위과제','하위 과제','실천과제','실천 과제','세부과제','세부 과제','세부과제명','세부 과제명','소과제','소과제명']);
+  let summary = headerValueFinal(r, ['summary','핵심내용','핵심 내용','핵심','주요내용','주요 내용','내용','요약','핵심 내용 요약']);
+  let relatedTopics = headerValueFinal(r, ['relatedTopics','related_topics','related','연결주제','연결 주제','관련주제','관련 주제','연계주제','연계 주제','키워드','keywords','keyword']);
+  let memo = headerValueFinal(r, ['memo','메모','비고','참고']);
+
+  // 첫 칸이 99-1처럼 세부번호인 시트도 허용
+  if (!subNo && looksLikeGovSubNoFinal(v[0])) {
+    subNo = v[0];
+    if (!taskNo) taskNo = subNo.split('-')[0];
+    if (!subTitle && v[1]) subTitle = v[1];
+    if (!summary && v[2]) summary = v[2];
+    if (!relatedTopics && v[3]) relatedTopics = v[3];
+    if (!memo && v[4]) memo = v[4];
+  }
+
+  // 첫 칸이 99, 둘째 칸이 국정과제명인 일반형
+  if (!taskNo && looksLikeGovMainNoFinal(v[0])) taskNo = v[0];
+  if (!title && taskNo && v[1] && !looksLikeGovSubNoFinal(v[1])) title = v[1];
+
+  // 형태 A: 99 / AI... / 99-1 / 세부제목 / 핵심내용 / 연결주제 / 메모
+  if (taskNo && looksLikeGovSubNoFinal(v[2])) {
+    if (!subNo) subNo = v[2];
+    if (!subTitle && v[3]) subTitle = v[3];
+    if (!summary && v[4]) summary = v[4];
+    if (!relatedTopics && v[5]) relatedTopics = v[5];
+    if (!memo && v[6]) memo = v[6];
+  }
+
+  // 형태 B: 99 / AI... / 세부제목 / 핵심내용 / 연결주제 / 메모
+  if (taskNo && !subNo && v[2] && !looksLikeGovSubNoFinal(v[2])) {
+    if (!subTitle) subTitle = v[2];
+    if (!summary && v[3]) summary = v[3];
+    if (!relatedTopics && v[4]) relatedTopics = v[4];
+    if (!memo && v[5]) memo = v[5];
+  }
+
+  // 형태 C: 99 / 세부제목 / 핵심내용 / 연결주제 / 메모  또는  99 / 국정과제명 / 핵심내용 / 연결주제
+  if (taskNo && !summary && v[2] && !looksLikeGovSubNoFinal(v[2])) {
+    summary = v[2];
+    if (!relatedTopics && v[3]) relatedTopics = v[3];
+    if (!memo && v[4]) memo = v[4];
+  }
+
+  if (!taskNo && subNo) taskNo = subNo.split('-')[0];
+  if (!title && taskNo) title = GOV_TITLES[taskNo] || ('국정과제 ' + taskNo);
+
+  // 핵심내용과 연결주제가 같은 경우는 잘못 읽은 것이므로 연결주제는 비워 두고, 화면에서 기본 매핑으로 보정
+  if (isSameTextFinal(summary, relatedTopics)) relatedTopics = '';
+
+  return { taskNo, title, subNo, subTitle, summary, relatedTopics, memo };
+}
+
+function getGovRowsByTaskFinal(taskNo) {
+  const rows = (DB.govTasks || []).filter(r => String(r.taskNo || '').trim() === String(taskNo));
+  return rows.filter(r => asTextFinal(r.subNo || r.subTitle || r.summary || r.relatedTopics || r.memo));
+}
+function govCardOrderFinal(no) {
+  const order = ['55','99','100','101','102'];
+  const idx = order.indexOf(String(no));
+  return idx < 0 ? 999 : idx;
+}
+function renderGovTaskCards() {
+  const rows = Array.isArray(DB.govTasks) ? DB.govTasks : [];
+  if (!rows.length) return '<div class="card">국정과제 자료를 아직 불러오지 못했습니다. 그래도 위쪽 메뉴는 계속 사용할 수 있습니다.</div>';
+  const groups = groupBy(rows, r => String(r.taskNo || '').trim());
+  const entries = Object.entries(groups)
+    .filter(([taskNo]) => taskNo)
+    .sort((a,b) => govCardOrderFinal(a[0]) - govCardOrderFinal(b[0]) || String(a[0]).localeCompare(String(b[0])));
+
+  return `<div class="plan-grid">${entries.map(([taskNo, groupRows], idx) => {
+    const contentRows = groupRows.filter(r => asTextFinal(r.subNo || r.subTitle || r.summary || r.relatedTopics));
+    const titleRow = groupRows.find(r => r.title) || {};
+    const title = titleRow.title || GOV_TITLES[taskNo] || `국정과제 ${taskNo}`;
+    const c = TOPIC_COLORS[(idx + 1) % TOPIC_COLORS.length];
+    return `<div class="plan-card" onclick="openGovTaskDetail('${escapeAttr(taskNo)}')" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+      <div class="plan-no" style="background:${c[0]}">${escapeHtml(taskNo)}</div>
+      <div class="plan-title" style="color:${c[0]}">${escapeHtml(title)}</div>
+      <div class="plan-summary">하위 과제 ${contentRows.length}개</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+function openGovTaskDetail(taskNo) {
+  const groupMap = groupBy(DB.govTasks || [], r => String(r.taskNo || '').trim());
+  const keys = Object.keys(groupMap).filter(Boolean).sort((a,b) => govCardOrderFinal(a) - govCardOrderFinal(b) || String(a).localeCompare(String(b)));
+  const idx = Math.max(0, keys.indexOf(String(taskNo)));
+  const c = TOPIC_COLORS[(idx + 1) % TOPIC_COLORS.length];
+  const rowsRaw = getGovRowsByTaskFinal(taskNo);
+  const rows = rowsRaw.length ? rowsRaw : (groupMap[String(taskNo)] || []);
+  const title = (rows.find(r => r.title) || {}).title || GOV_TITLES[taskNo] || `국정과제 ${taskNo}`;
+
+  document.getElementById('govTasksContent').innerHTML = `
+    <div class="btns"><button class="ghost" onclick="openGovTasks()">← 국정과제 목록</button></div>
+    <h2 style="color:${c[0]}">${escapeHtml(taskNo)}. ${escapeHtml(title)}</h2>
+    ${rows.map((r, index) => {
+      const displaySubNo = r.subNo || `${taskNo}-${index + 1}`;
+      let related = r.relatedTopics || GOV_RELATED[displaySubNo] || GOV_RELATED[r.subNo] || '';
+      if (isSameTextFinal(related, r.summary)) related = GOV_RELATED[displaySubNo] || GOV_RELATED[r.subNo] || '';
+      const chips = splitList(related).filter(Boolean).map(x => `<span class="gov-chip" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">${escapeHtml(x)}</span>`).join('');
+      const hasBody = asTextFinal(r.subTitle || r.summary || related || r.memo);
+      if (!hasBody) return '';
+      return `<div class="plan-section gov-detail-section" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]};border-color:${c[2]}">
+        <div class="plan-section-title" style="color:${c[0]}"><span class="plan-code">${escapeHtml(displaySubNo)}</span> ${escapeHtml(r.subTitle || '')}</div>
+        ${r.summary ? `<div class="gov-label">핵심 내용</div><div class="gov-core-text">${escapeHtml(r.summary).replace(/\n/g,'<br>')}</div>` : ''}
+        ${related ? `<div class="gov-label">연결 주제</div><div class="gov-chip-wrap">${chips}</div>` : ''}
+        ${r.memo ? `<div class="small">메모: ${escapeHtml(r.memo)}</div>` : ''}
+      </div>`;
+    }).join('')}
+  `;
+  setAppState({ view: 'govTasks', govTaskNo: String(taskNo || '') });
+}
+
+function rememberPastelFinal(index) {
+  const palettes = [
+    ['#fbf7ff','#dacdff','#7c61ff'],
+    ['#f2fbff','#c5e9ff','#2f80ed'],
+    ['#f2fff8','#bdeed5','#00a36c'],
+    ['#fff8ed','#ffd9a8','#f28c28'],
+    ['#fff4f9','#ffd2e7','#d45fa6'],
+    ['#f0fffc','#bceee7','#18a2a8'],
+    ['#f8f5ff','#dfd1ff','#9b6bff'],
+    ['#fff5f2','#ffd0c3','#ff7c7c']
+  ];
+  return palettes[index % palettes.length];
+}
+function renderRememberCard(m, index) {
+  const normalized = normalizeAppMemoSafe(m || {});
+  const id = normalized.id || '';
+  const memo = normalized.memo || '';
+  const memoArg = encodeJsArg(memo);
+  const key = normalized.key || id || makeMemoDomKeyFinal(memo);
+  const domId = 'remember-' + String(key).replace(/[^a-zA-Z0-9_-]/g,'').slice(0,40);
+  const p = rememberPastelFinal(Number(index || 0));
+  return '<div class="remember-card pastel-remember-card" id="' + escapeAttr(domId) + '" style="--memoBg:' + p[0] + ';--memoLine:' + p[1] + ';--memoAccent:' + p[2] + '">' +
+    '<div class="remember-head"><div class="remember-label" style="color:' + p[2] + '">기억 메모</div><div class="remember-tools">' +
+    '<button type="button" class="icon-btn soft-blue" title="수정" onclick="editRememberMemo(\'' + escapeAttr(id) + '\',\'' + memoArg + '\')">✏️</button>' +
+    '<button type="button" class="icon-btn warn" title="삭제" onclick="deleteRememberEntry(\'' + escapeAttr(id) + '\',\'' + memoArg + '\')">🗑</button>' +
+    '</div></div><div class="remember-content">' + escapeHtml(memo).replace(/\n/g,'<br>') + '</div></div>';
+}
+function renderRememberList(state) {
+  const box = document.getElementById('rememberList');
+  if (!box) return;
+  if (state === 'loading') {
+    box.innerHTML = '<div class="remember-empty">저장된 메모를 불러오는 중입니다...</div>';
+    return;
+  }
+  const entries = getRememberEntries();
+  if (!entries.length) {
+    box.innerHTML = '<div class="remember-empty">아직 저장된 기억 메모가 없습니다. 메모 추가 버튼으로 바로 저장할 수 있습니다.</div>';
+    return;
+  }
+  box.innerHTML = '<div class="remember-list">' + entries.map((m, i) => renderRememberCard(m, i)).join('') + '</div>';
+}
+function openRememberPage() {
+  showView('rememberPage');
+  renderRememberList();
+  setAppState({ view: 'rememberPage' });
+}
+async function refreshRememberMemos(showAlertOnFail) {
+  try {
+    const res = await fetch(WEB_APP_URL + '?action=read&v=' + Date.now(), { cache: 'no-store' });
+    const fresh = await res.json();
+    const memos = pickAppMemoArrayFromResponse(fresh);
+    DB.appMemos = memos.map(normalizeAppMemoSafe).filter(m => m.memo);
+    localStorage.setItem('memoryAppCache', JSON.stringify(DB));
+    renderRememberList();
+    if (document.getElementById('home') && document.getElementById('home').classList.contains('active')) {
+      const hm = document.getElementById('homeMemo');
+      if (hm) hm.innerHTML = renderPageMemo('home') + renderRememberMemo();
+    }
+  } catch (err) {
+    console.warn(err);
+    renderRememberList();
+    if (showAlertOnFail !== false) alert('새로고침 실패: Apps Script 배포와 권한을 확인해 주세요.');
+  }
+}
+function renderHomeShellFinal(message) {
+  DB = DB || { topics: [], topicExtraSections: [], quizKeywords: [], workPlan: [], govTasks: [], future2030: [], news: [], pageMemos: [], appMemos: [] };
+  try { renderHome(); } catch(e) { console.warn(e); }
+  const loading = document.getElementById('loading');
+  if (loading) {
+    loading.style.display = 'block';
+    loading.innerHTML = message || '구글시트를 불러오지 못했습니다. 그래도 메모와 상단 메뉴는 사용할 수 있습니다.';
+  }
+  const hm = document.getElementById('homeMemo');
+  if (hm) hm.innerHTML = renderRememberMemo();
+}
+
+async function initApp() {
+  const loading = document.getElementById('loading');
+  const cached = localStorage.getItem('memoryAppCache');
+
+  if (cached) {
+    try {
+      DB = JSON.parse(cached);
+      renderHome();
+      restoreLastAppState();
+    } catch(e) {
+      console.warn(e);
+    }
+  } else {
+    const hm = document.getElementById('homeMemo');
+    if (hm) hm.innerHTML = renderRememberMemo();
+  }
+
+  if (!WEB_APP_URL || WEB_APP_URL.includes('여기에_')) {
+    if (!cached) renderHomeShellFinal('HTML 코드의 <b>WEB_APP_URL</b>에 Apps Script 웹앱 URL을 먼저 넣어주세요.');
+    return;
+  }
+
+  try {
+    if (loading && !cached) loading.innerHTML = '구글시트 데이터를 불러오는 중입니다...';
+    const res = await fetch(WEB_APP_URL + '?action=read&v=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data && data.ok === false) throw new Error(data.error || 'Apps Script에서 오류를 반환했습니다.');
+    DB = normalizeData(data || {});
+    localStorage.setItem('memoryAppCache', JSON.stringify(DB));
+    renderHome();
+
+    const state = getAppState();
+    if (!cached) {
+      restoreLastAppState();
+    } else {
+      if (state.view === 'rememberPage') renderRememberList();
+      if (state.view === 'detail' && state.detailNo) {
+        RESTORING_STATE = true;
+        try { __baseOpenDetail(Number(state.detailNo)); if (state.sectionKey) __baseShowSection(state.sectionKey); }
+        finally { RESTORING_STATE = false; }
+      }
+      if (state.view === 'govTasks' && state.govTaskNo) {
+        RESTORING_STATE = true;
+        try { __baseOpenGovTasks(); __baseOpenGovTaskDetail(state.govTaskNo); }
+        finally { RESTORING_STATE = false; }
+      }
+    }
+  } catch (err) {
+    console.warn(err);
+    if (!cached) renderHomeShellFinal('구글시트를 불러오지 못했습니다. 그래도 메모와 상단 메뉴는 사용할 수 있습니다.<br><span class="small">' + escapeHtml(String(err)) + '</span>');
+  }
+}
+
+(function addFinalPastelCss(){
+  const style = document.createElement('style');
+  style.textContent = `
+    .pastel-remember-card,
+    .remember-card.pastel-remember-card {
+      background: var(--memoBg) !important;
+      border-color: var(--memoLine) !important;
+      box-shadow: 0 8px 20px rgba(65,56,110,.055) !important;
+    }
+    .pastel-remember-card .remember-label {
+      background: rgba(255,255,255,.58);
+      border: 1px solid var(--memoLine);
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-weight: 900;
+    }
+    .pastel-remember-card .remember-content { line-height: 1.75; }
+    .gov-label { font-weight: 900 !important; }
+    .gov-detail-section { margin-top: 14px !important; }
+  `;
+  document.head.appendChild(style);
+})();
+
+
+
+// 국정과제 govTasks 시트 전용 최종 보정
+// 현재 시트 헤더 기준: taskNo / taskTitle / summary / subCode / subTitle / core / link
+(function repairGovTasksByExactHeaders(){
+  function clean(v) {
+    return String(v == null ? '' : v).replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+  }
+  function normKey(v) {
+    return clean(v).replace(/[\s_\-\.]/g, '').toLowerCase();
+  }
+  function valueOf(row, keys) {
+    if (!row) return '';
+    const rowKeys = Object.keys(row);
+    const normalizedKeys = keys.map(normKey);
+    for (const realKey of rowKeys) {
+      if (normalizedKeys.includes(normKey(realKey))) {
+        const value = clean(row[realKey]);
+        if (value) return value;
+      }
+    }
+    return '';
+  }
+  function rawValues(row) {
+    const keys = Object.keys(row || {}).filter(k => /^_c\d+$/i.test(k)).sort((a, b) => Number(a.slice(2)) - Number(b.slice(2)));
+    if (keys.length) return keys.map(k => clean(row[k]));
+    return Object.values(row || {}).map(clean);
+  }
+  function looksSubCode(v) {
+    return /^\d{1,3}-\d{1,3}$/.test(clean(v));
+  }
+  function mainFromSub(v) {
+    return clean(v).split('-')[0] || '';
+  }
+  function splitGovTags(text) {
+    return clean(text).split(/\s*,\s*|\n+|\s*\/\s*/).map(s => s.trim()).filter(Boolean);
+  }
+  function compareSubCode(a, b) {
+    const aa = clean(a).split('-').map(Number);
+    const bb = clean(b).split('-').map(Number);
+    return (aa[0] || 0) - (bb[0] || 0) || (aa[1] || 0) - (bb[1] || 0);
+  }
+
+  window.normalizeGovRow = function normalizeGovRow(row) {
+    const v = rawValues(row);
+
+    let taskNo = valueOf(row, ['taskNo', 'task no', '국정과제번호', '과제번호', '번호']);
+    let taskTitle = valueOf(row, ['taskTitle', 'task title', '국정과제명', '과제명', '대과제명', '제목']);
+    let taskSummary = valueOf(row, ['summary', '대과제요약', '국정과제요약', '전체요약']);
+    let subCode = valueOf(row, ['subCode', 'sub code', 'subNo', 'sub no', '세부번호', '세부과제번호', '하위과제번호']);
+    let subTitle = valueOf(row, ['subTitle', 'sub title', '세부과제명', '세부과제', '하위과제명', '하위과제']);
+    let core = valueOf(row, ['core', '핵심내용', '핵심 내용', '핵심', '주요내용', '주요 내용']);
+    let link = valueOf(row, ['link', 'links', '연결주제', '연결 주제', '관련주제', '관련 주제', '연계주제', '연계 주제', '키워드']);
+    let memo = valueOf(row, ['memo', '메모', '비고', '참고']);
+
+    // 헤더가 깨졌거나 없는 경우를 위한 현재 시트 순서 기준 보정
+    // A taskNo / B taskTitle / C summary / D subCode / E subTitle / F core / G link
+    if (!taskNo && v[0]) taskNo = v[0];
+    if (!taskTitle && v[1]) taskTitle = v[1];
+    if (!taskSummary && v[2]) taskSummary = v[2];
+    if (!subCode && v[3]) subCode = v[3];
+    if (!subTitle && v[4]) subTitle = v[4];
+    if (!core && v[5]) core = v[5];
+    if (!link && v[6]) link = v[6];
+    if (!memo && v[7]) memo = v[7];
+
+    if (!taskNo && looksSubCode(subCode)) taskNo = mainFromSub(subCode);
+    if (!subCode && looksSubCode(v[0])) {
+      subCode = v[0];
+      taskNo = taskNo || mainFromSub(subCode);
+    }
+
+    // 절대 summary 컬럼을 세부 핵심 내용으로 쓰지 않음
+    // 화면의 핵심 내용은 F열 core만 사용
+    const detailCore = core;
+
+    return {
+      taskNo: clean(taskNo),
+      title: clean(taskTitle),
+      taskTitle: clean(taskTitle),
+      taskSummary: clean(taskSummary),
+      subNo: clean(subCode),
+      subCode: clean(subCode),
+      subTitle: clean(subTitle),
+      summary: clean(detailCore),
+      core: clean(detailCore),
+      relatedTopics: clean(link),
+      link: clean(link),
+      memo: clean(memo)
+    };
+  };
+
+  window.getGovRowsByTaskFinal = function getGovRowsByTaskFinal(taskNo) {
+    return (DB.govTasks || [])
+      .filter(r => clean(r.taskNo) === clean(taskNo))
+      .filter(r => clean(r.subNo || r.subTitle || r.summary || r.relatedTopics || r.memo))
+      .sort((a, b) => compareSubCode(a.subNo, b.subNo));
+  };
+
+  window.renderGovTaskCards = function renderGovTaskCards() {
+    const rows = Array.isArray(DB.govTasks) ? DB.govTasks : [];
+    if (!rows.length) return '<div class="card">국정과제 자료를 아직 불러오지 못했습니다.</div>';
+
+    const groups = groupBy(rows, r => clean(r.taskNo));
+    const entries = Object.entries(groups)
+      .filter(([taskNo]) => taskNo)
+      .sort((a, b) => Number(a[0]) - Number(b[0]) || String(a[0]).localeCompare(String(b[0]), 'ko', { numeric: true }));
+
+    return `<div class="plan-grid">${entries.map(([taskNo, groupRows], idx) => {
+      const c = TOPIC_COLORS[(idx + 1) % TOPIC_COLORS.length];
+      const title = clean((groupRows.find(r => clean(r.title)) || {}).title) || (window.GOV_TITLES ? GOV_TITLES[taskNo] : '') || `국정과제 ${taskNo}`;
+      const contentRows = groupRows.filter(r => clean(r.subNo || r.subTitle || r.summary || r.relatedTopics));
+      return `<div class="plan-card" onclick="openGovTaskDetail('${escapeAttr(taskNo)}')" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+        <div class="plan-no" style="background:${c[0]}">${escapeHtml(taskNo)}</div>
+        <div class="plan-title" style="color:${c[0]}">${escapeHtml(title)}</div>
+        <div class="plan-summary">하위 과제 ${contentRows.length}개</div>
+      </div>`;
+    }).join('')}</div>`;
+  };
+
+  window.openGovTaskDetail = function openGovTaskDetail(taskNo) {
+    const groupMap = groupBy(DB.govTasks || [], r => clean(r.taskNo));
+    const keys = Object.keys(groupMap).filter(Boolean).sort((a, b) => Number(a) - Number(b) || String(a).localeCompare(String(b), 'ko', { numeric: true }));
+    const idx = Math.max(0, keys.indexOf(clean(taskNo)));
+    const c = TOPIC_COLORS[(idx + 1) % TOPIC_COLORS.length];
+    const rows = getGovRowsByTaskFinal(taskNo);
+    const title = clean((rows.find(r => clean(r.title)) || {}).title) || (window.GOV_TITLES ? GOV_TITLES[taskNo] : '') || `국정과제 ${taskNo}`;
+
+    document.getElementById('govTasksContent').innerHTML = `
+      <div class="btns"><button class="ghost" onclick="openGovTasks()">← 국정과제 목록</button></div>
+      <h2 style="color:${c[0]}">${escapeHtml(taskNo)}. ${escapeHtml(title)}</h2>
+      ${rows.map((r, index) => {
+        const displaySubNo = clean(r.subNo) || `${taskNo}-${index + 1}`;
+        const related = clean(r.relatedTopics);
+        const chips = splitGovTags(related).map(x => `<span class="gov-chip" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">${escapeHtml(x)}</span>`).join('');
+        return `<div class="plan-section gov-detail-section" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]};border-color:${c[2]}">
+          <div class="plan-section-title" style="color:${c[0]}"><span class="plan-code">${escapeHtml(displaySubNo)}</span> ${escapeHtml(clean(r.subTitle))}</div>
+          ${clean(r.summary) ? `<div class="gov-label">핵심 내용</div><div class="gov-core-text">${escapeHtml(clean(r.summary)).replace(/\n/g, '<br>')}</div>` : ''}
+          ${related ? `<div class="gov-label">연결 주제</div><div class="gov-chip-wrap">${chips}</div>` : ''}
+          ${clean(r.memo) ? `<div class="small">메모: ${escapeHtml(clean(r.memo))}</div>` : ''}
+        </div>`;
+      }).join('')}
+    `;
+    setAppState({ view: 'govTasks', govTaskNo: clean(taskNo) });
+  };
+})();
+
+// 최종 초기화는 모든 보정 코드가 올라온 뒤 한 번만 실행합니다.
+initApp();
 </script>
 </body>
 </html>
