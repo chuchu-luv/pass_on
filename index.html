@@ -1187,6 +1187,161 @@
   }
 </style>
 
+
+<style id="interview-topic2-style">
+  /* 교감면접 topic2 화면 */
+  .interview-hero {
+    padding: 16px 18px;
+    border: 1px solid #ded7ff;
+    background: rgba(255,255,255,.95);
+    border-radius: 24px;
+    box-shadow: 0 8px 20px rgba(65,56,110,.06);
+    margin: 10px 0 14px;
+  }
+  .interview-area-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .interview-area-btn {
+    min-height: 58px !important;
+    border-radius: 20px !important;
+    padding: 10px 12px !important;
+    font-size: 17px !important;
+    line-height: 1.15 !important;
+    color: var(--topic) !important;
+    background: linear-gradient(135deg, var(--topicSoft), #ffffff) !important;
+    border: 1px solid var(--topicLine) !important;
+    box-shadow: 0 8px 18px rgba(65,56,110,.08) !important;
+  }
+  .interview-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 8px;
+    margin-left: 6px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.72);
+    font-size: 13px;
+    color: var(--topic);
+  }
+  .interview-topic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .interview-topic-card {
+    cursor: pointer;
+    border-radius: 22px;
+    border: 1px solid var(--topicLine);
+    background: rgba(255,255,255,.96);
+    padding: 14px;
+    box-shadow: 0 8px 20px rgba(65,56,110,.06);
+    transition: transform .16s ease, box-shadow .16s ease;
+  }
+  .interview-topic-card:hover { transform: translateY(-2px); box-shadow: 0 13px 26px rgba(65,56,110,.12); }
+  .interview-topic-no {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--topicSoft);
+    color: var(--topic);
+    font-weight: 900;
+    font-size: 14px;
+  }
+  .interview-topic-title {
+    margin-top: 9px;
+    font-size: 19px;
+    font-weight: 900;
+    line-height: 1.25;
+    color: #211f35;
+    word-break: keep-all;
+  }
+  .interview-keywords {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .interview-chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 4px 8px;
+    background: var(--topicSoft);
+    border: 1px solid var(--topicLine);
+    color: var(--topic);
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1.1;
+  }
+  .interview-detail-head {
+    margin: 8px 0 12px;
+    padding: 16px;
+    border-radius: 24px;
+    border: 1px solid var(--topicLine);
+    background: linear-gradient(135deg, var(--topicSoft), rgba(255,255,255,.96));
+  }
+  .interview-detail-title {
+    font-size: 25px;
+    font-weight: 900;
+    line-height: 1.25;
+    color: var(--topic);
+    word-break: keep-all;
+  }
+  .interview-section-grid {
+    display: grid;
+    gap: 10px;
+  }
+  .interview-section {
+    border: 1px solid var(--topicLine);
+    border-radius: 20px;
+    padding: 14px 15px;
+    background: rgba(255,255,255,.97);
+    box-shadow: 0 6px 16px rgba(65,56,110,.05);
+  }
+  .interview-section-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: var(--topicSoft);
+    color: var(--topic);
+    font-size: 15px;
+    font-weight: 900;
+    margin-bottom: 8px;
+  }
+  .interview-section-body {
+    font-size: 18px;
+    line-height: 1.62;
+    word-break: keep-all;
+    white-space: pre-line;
+    color: #1f1b34;
+  }
+  .interview-topline {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  @media (max-width: 760px) {
+    .interview-area-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .interview-area-btn { min-height: 46px !important; font-size: 14px !important; border-radius: 16px !important; padding: 8px 6px !important; }
+    .interview-topic-grid { grid-template-columns: 1fr; }
+    .interview-topic-title { font-size: 17px; }
+    .interview-detail-title { font-size: 21px; }
+    .interview-section-body { font-size: 16.5px; line-height: 1.58; }
+  }
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -1203,6 +1358,9 @@
         <button class="soft-mint home-action" onclick="openWorkPlan()">🌿 주요업무계획</button>
         <button class="soft-lavender home-action" onclick="openFuture2030()">🌈 2030 미래교육</button>
         <button class="soft-blue home-action" onclick="openNews()">📰 뉴스 현황</button>
+        <button class="soft-lavender home-action" onclick="openInterview()">🎤 교감면접 주제</button>
+        <button class="soft-blue home-action" id="homeTodayMemoButton" onclick="toggleTodayMemo()">📝 오늘의 메모</button>
+        <button class="soft-lavender home-action" id="homeRememberButton" onclick="openRememberPage()">💭 기억할 것</button>
       </div>
     </div>
 
@@ -1337,6 +1495,18 @@
       <div class="sub">기사 핵심, 실태분석, 시사점, 관련 충남 정책, 지원방안을 암기용으로 정리합니다.</div>
     </div></div>
     <div id="newsContent"></div>
+  </div>
+
+  <div id="interview" class="view">
+    <div class="top"><div>
+      <div class="top-mini-actions">
+        <button class="home-back" onclick="showView('home')">🏠 첫페이지</button>
+        <button class="list-back" onclick="openInterview()">↩ 영역 목록</button>
+      </div>
+      <h2>교감면접 주제</h2>
+      <div class="sub">교감면접 주제를 영역별, 주제별로 확인합니다. 답변은 지원청 장학사 관점으로 정리됩니다.</div>
+    </div></div>
+    <div id="interviewContent"></div>
   </div>
 </div>
 
@@ -1683,13 +1853,23 @@ function deleteLocalRememberMemo() {
 }
 
 async function callMemoApi(action, params={}) {
-  const query = new URLSearchParams();
-  query.set('action', action);
-  query.set('v', Date.now());
-  Object.entries(params).forEach(([k,v]) => query.set(k, v == null ? '' : String(v)));
+  // 메모 추가/수정/삭제는 긴 문단과 줄바꿈이 많아서 GET(URL) 방식으로 보내면
+  // iPhone Chrome/Safari에서 Load failed가 날 수 있습니다.
+  // 그래서 memo, oldMemo는 주소가 아니라 POST body에 담아 보냅니다.
+  const body = new URLSearchParams();
+  body.set('action', action);
+  body.set('v', Date.now());
+  Object.entries(params).forEach(([k, v]) => body.set(k, v == null ? '' : String(v)));
 
-  const url = WEB_APP_URL + '?' + query.toString();
-  const res = await fetch(url, { cache: 'no-store' });
+  const res = await fetch(WEB_APP_URL, {
+    method: 'POST',
+    cache: 'no-store',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+    },
+    body: body.toString()
+  });
+
   const text = await res.text();
   let result;
   try { result = JSON.parse(text); }
@@ -3937,6 +4117,427 @@ async function initApp() {
       }).join('')}
     `;
     setAppState({ view: 'govTasks', govTaskNo: clean(taskNo) });
+  };
+})();
+
+
+
+/* === TOPIC2 PATCH 2026-05-05: 교감면접 주제 페이지 === */
+(function(){
+  const AREA_COLORS = {
+    '교직 공통': ['#7c61ff','#f0ebff','#ded2ff'],
+    '유치원': ['#d45fa6','#fff0f8','#ffd3eb'],
+    '유·초등': ['#18a2a8','#e9fcff','#bdeff2'],
+    '초·중등': ['#2f80ed','#eef4ff','#cddfff'],
+    '교양 공통': ['#00a36c','#e9fff5','#bff0dc']
+  };
+
+  function t2Text(v){ return String(v == null ? '' : v).trim(); }
+  function t2PickArray(data){
+    if (!data || typeof data !== 'object') return [];
+    const keys = ['topic2','Topic2','TOPIC2','교감면접','교감면접주제','면접주제','interviewTopics','InterviewTopics'];
+    for (const k of keys) if (Array.isArray(data[k])) return data[k];
+    return [];
+  }
+  function t2Value(row, keys, fallback){
+    const direct = getAny(row, keys, '');
+    if (t2Text(direct)) return t2Text(direct);
+    return t2Text(fallback || '');
+  }
+  function t2Vals(row){
+    if (typeof rawRowVals === 'function') return rawRowVals(row).map(t2Text);
+    return Object.values(row || {}).map(t2Text);
+  }
+  window.normalizeInterviewRow = function(row, index){
+    const v = t2Vals(row);
+    const area = t2Value(row, ['area','category','영역','구분'], v[0]);
+    const no = t2Value(row, ['no','순','번호','topicNo','topic_no'], v[1]);
+    const topic = t2Value(row, ['topic','주제','면접주제','교감면접 주제'], v[2]);
+    const viewpoint = t2Value(row, ['viewpoint','장학사 관점','장학사관점','관점'], v[3]);
+    const policyDesign = t2Value(row, ['policyDesign','정책 설계','정책설계','지원방안1'], v[4]);
+    const gapSupport = t2Value(row, ['gapSupport','학교 간 격차 해소','학교간 격차 해소','격차해소','지원방안2'], v[5]);
+    const fieldSupport = t2Value(row, ['fieldSupport','현장 실행 지원','현장실행지원','실행지원','지원방안3'], v[6]);
+    const integratedSupport = t2Value(row, ['integratedSupport','학생·교원 통합지원','학생 교원 통합지원','통합지원','지원방안4'], v[7]);
+    const localConnection = t2Value(row, ['localConnection','지역·기관 연계','지역 기관 연계','지역연계','기관연계','지원방안5'], v[8]);
+    const keywords = t2Value(row, ['keywords','면접 핵심 키워드','핵심키워드','키워드'], v[9]);
+    const id = [area, no, topic].map(x => t2Text(x).replace(/\s+/g,'_')).join('__') || ('topic2_' + index);
+    return { id, area, no, topic, viewpoint, policyDesign, gapSupport, fieldSupport, integratedSupport, localConnection, keywords, _index:index };
+  };
+
+  const baseNormalizeDataForTopic2 = window.normalizeData || normalizeData;
+  window.normalizeData = normalizeData = function(data){
+    const db = baseNormalizeDataForTopic2(data || {});
+    const raw = t2PickArray(data || {});
+    db.topic2 = raw.map((r, i) => normalizeInterviewRow(r, i)).filter(r => r.area || r.topic);
+    return db;
+  };
+
+  function getInterviewRows(){ return Array.isArray(DB.topic2) ? DB.topic2 : []; }
+  function areaColor(area, idx){ return AREA_COLORS[area] || TOPIC_COLORS[idx % TOPIC_COLORS.length] || TOPIC_COLORS[0]; }
+  function enc(v){ return encodeURIComponent(String(v || '')); }
+  function dec(v){ try { return decodeURIComponent(String(v || '')); } catch(e) { return String(v || ''); } }
+  function t2Tags(text){ return splitList(text).slice(0, 8); }
+
+  window.openInterview = function(){
+    showView('interview');
+    renderInterviewAreas();
+    if (typeof setAppState === 'function') setAppState({ view:'interview', interviewArea:'', interviewId:'' });
+  };
+
+  window.renderInterviewAreas = function(){
+    const box = document.getElementById('interviewContent');
+    if (!box) return;
+    const rows = getInterviewRows();
+    if (!rows.length) {
+      box.innerHTML = '<div class="card">교감면접 주제가 없습니다. 구글시트에 <b>topic2</b> 시트를 만들고, 헤더를 <b>영역 / 순 / 주제 / 장학사 관점 / 정책 설계 / 학교 간 격차 해소 / 현장 실행 지원 / 학생·교원 통합지원 / 지역·기관 연계 / 면접 핵심 키워드</b>로 입력해 주세요.</div>';
+      return;
+    }
+    const groups = groupBy(rows, r => r.area || '기타');
+    const order = ['교직 공통','유치원','유·초등','초·중등','교양 공통'];
+    const entries = Object.entries(groups).sort((a,b) => {
+      const ai = order.indexOf(a[0]);
+      const bi = order.indexOf(b[0]);
+      return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi) || a[0].localeCompare(b[0], 'ko');
+    });
+    box.innerHTML = `<div class="interview-hero">
+      <div class="pill-title">영역을 먼저 고르세요</div>
+      <div class="small">각 주제는 학교 운영 답변이 아니라 <b>지원청 장학사로서 정책 설계, 학교 간 격차 해소, 현장 실행 지원, 통합지원, 지역 연계</b> 관점으로 정리됩니다.</div>
+      <div class="interview-area-grid">${entries.map(([area, list], idx) => {
+        const c = areaColor(area, idx);
+        return `<button class="interview-area-btn" onclick="openInterviewArea('${enc(area)}')" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">${escapeHtml(area)} <span class="interview-count">${list.length}</span></button>`;
+      }).join('')}</div>
+    </div>`;
+  };
+
+  window.openInterviewArea = function(areaEncoded){
+    const area = dec(areaEncoded);
+    showView('interview');
+    const rows = getInterviewRows().filter(r => String(r.area || '') === area);
+    const allAreas = Object.keys(groupBy(getInterviewRows(), r => r.area || '기타'));
+    const idx = allAreas.indexOf(area);
+    const c = areaColor(area, Math.max(0, idx));
+    const box = document.getElementById('interviewContent');
+    box.innerHTML = `<div class="interview-topline">
+        <button class="ghost" onclick="openInterview()">← 영역 목록</button>
+      </div>
+      <div class="interview-detail-head" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+        <div class="interview-detail-title">${escapeHtml(area)}</div>
+        <div class="small">총 ${rows.length}개 주제입니다. 주제를 누르면 장학사 관점 지원방안이 펼쳐집니다.</div>
+      </div>
+      <div class="interview-topic-grid">${rows.map((r, i) => {
+        const tags = t2Tags(r.keywords).slice(0, 4).map(k => `<span class="interview-chip">${escapeHtml(k)}</span>`).join('');
+        return `<div class="interview-topic-card" onclick="openInterviewDetail('${enc(r.id)}')" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+          <span class="interview-topic-no">${escapeHtml(r.no || String(i+1))}</span>
+          <div class="interview-topic-title">${escapeHtml(r.topic)}</div>
+          ${tags ? `<div class="interview-keywords">${tags}</div>` : ''}
+        </div>`;
+      }).join('')}</div>`;
+    if (typeof setAppState === 'function') setAppState({ view:'interview', interviewArea:area, interviewId:'' });
+  };
+
+  window.openInterviewDetail = function(idEncoded){
+    const id = dec(idEncoded);
+    const rows = getInterviewRows();
+    const r = rows.find(x => String(x.id) === id);
+    if (!r) return openInterview();
+    const areaRows = rows.filter(x => x.area === r.area);
+    const areaIndex = Object.keys(groupBy(rows, x => x.area || '기타')).indexOf(r.area);
+    const c = areaColor(r.area, Math.max(0, areaIndex));
+    const idx = areaRows.findIndex(x => x.id === r.id);
+    const prev = idx > 0 ? areaRows[idx - 1] : null;
+    const next = idx < areaRows.length - 1 ? areaRows[idx + 1] : null;
+    const sections = [
+      ['🧭 장학사 관점', r.viewpoint],
+      ['1. 정책 설계', r.policyDesign],
+      ['2. 학교 간 격차 해소', r.gapSupport],
+      ['3. 현장 실행 지원', r.fieldSupport],
+      ['4. 학생·교원 통합지원', r.integratedSupport],
+      ['5. 지역·기관 연계', r.localConnection],
+      ['면접 핵심 키워드', r.keywords]
+    ];
+    document.getElementById('interviewContent').innerHTML = `<div class="interview-topline">
+        <button class="ghost" onclick="openInterviewArea('${enc(r.area)}')">← ${escapeHtml(r.area)} 목록</button>
+        ${prev ? `<button class="topic-nav-btn prev" onclick="openInterviewDetail('${enc(prev.id)}')">← 이전 주제</button>` : ''}
+        ${next ? `<button class="topic-nav-btn next" onclick="openInterviewDetail('${enc(next.id)}')">다음 주제 →</button>` : ''}
+      </div>
+      <div class="interview-detail-head" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+        <div class="small">${escapeHtml(r.area)} · ${escapeHtml(r.no)}</div>
+        <div class="interview-detail-title">${escapeHtml(r.topic)}</div>
+      </div>
+      <div class="interview-section-grid" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+        ${sections.filter(([title, body]) => t2Text(body)).map(([title, body]) => {
+          const isKeyword = title.includes('키워드');
+          const bodyHtml = isKeyword
+            ? `<div class="interview-keywords">${t2Tags(body).map(k => `<span class="interview-chip">${escapeHtml(k)}</span>`).join('')}</div>`
+            : `<div class="interview-section-body">${escapeHtml(body).replace(/\n/g, '<br>')}</div>`;
+          return `<div class="interview-section"><div class="interview-section-title">${escapeHtml(title)}</div>${bodyHtml}</div>`;
+        }).join('')}
+      </div>`;
+    if (typeof setAppState === 'function') setAppState({ view:'interview', interviewArea:r.area, interviewId:r.id });
+  };
+
+  if (typeof restoreLastAppState === 'function') {
+    const baseRestoreTopic2 = restoreLastAppState;
+    window.restoreLastAppState = restoreLastAppState = function(){
+      const state = typeof getAppState === 'function' ? getAppState() : {};
+      if (state && state.view === 'interview') {
+        if (typeof DID_RESTORE_ON_LOAD !== 'undefined' && DID_RESTORE_ON_LOAD) return;
+        if (typeof DID_RESTORE_ON_LOAD !== 'undefined') DID_RESTORE_ON_LOAD = true;
+        if (typeof RESTORING_STATE !== 'undefined') RESTORING_STATE = true;
+        try {
+          if (state.interviewId) openInterviewDetail(encodeURIComponent(state.interviewId));
+          else if (state.interviewArea) openInterviewArea(encodeURIComponent(state.interviewArea));
+          else openInterview();
+        } finally {
+          if (typeof RESTORING_STATE !== 'undefined') RESTORING_STATE = false;
+        }
+        return;
+      }
+      return baseRestoreTopic2();
+    };
+  }
+})();
+
+
+/* === FINAL PATCH 2026-05-05: 홈 3x3 + 교감면접 화면 정리 === */
+(function(){
+  const style = document.createElement('style');
+  style.id = 'home-3x3-interview-polish-final';
+  style.textContent = `
+    /* 홈 버튼 9개를 3*3으로 정리 */
+    #home .top {
+      display: grid !important;
+      grid-template-columns: minmax(250px, 1fr) minmax(520px, 600px) !important;
+      gap: 22px !important;
+      align-items: start !important;
+    }
+    #home .home-actions,
+    #home .home-actions.home-actions-fixed {
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      gap: 9px !important;
+      width: 100% !important;
+      max-width: 600px !important;
+      margin: 0 !important;
+    }
+    #home .home-actions > button,
+    #home .home-actions.home-actions-fixed > button {
+      grid-column: auto !important;
+      width: 100% !important;
+      min-width: 0 !important;
+      height: 42px !important;
+      min-height: 42px !important;
+      max-height: 42px !important;
+      padding: 8px 8px !important;
+      border-radius: 15px !important;
+      font-size: 14.5px !important;
+      white-space: nowrap !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      box-sizing: border-box !important;
+    }
+    #homeMemo .memo-toggle-row { display: none !important; }
+
+    /* 교감면접 화면: 밋밋한 흰색 카드 개선 */
+    #interview .list-back {
+      background: linear-gradient(135deg, #efe9ff, #f7f1ff) !important;
+      color: #6a4fc7 !important;
+      border: 1px solid #ddd2ff !important;
+      box-shadow: 0 5px 14px rgba(96,72,180,.09) !important;
+    }
+    .interview-hero {
+      background: linear-gradient(135deg, rgba(245,255,250,.96), rgba(244,247,255,.96)) !important;
+      border-color: #d4e9ff !important;
+    }
+    .interview-area-btn {
+      min-height: 52px !important;
+      background: linear-gradient(135deg, var(--topicSoft), #ffffff 72%) !important;
+      box-shadow: 0 6px 16px rgba(65,56,110,.07) !important;
+    }
+    .interview-area-btn:hover {
+      transform: translateY(-2px) scale(1.015) !important;
+    }
+    .interview-detail-head {
+      background: linear-gradient(135deg, var(--topicSoft), #ffffff 74%) !important;
+      box-shadow: 0 8px 20px rgba(65,56,110,.06) !important;
+    }
+    .interview-topic-card:nth-child(6n+1), .interview-section:nth-child(6n+1) { background: linear-gradient(135deg, #ffffff, #f5fbff) !important; }
+    .interview-topic-card:nth-child(6n+2), .interview-section:nth-child(6n+2) { background: linear-gradient(135deg, #ffffff, #fff8fb) !important; }
+    .interview-topic-card:nth-child(6n+3), .interview-section:nth-child(6n+3) { background: linear-gradient(135deg, #ffffff, #f6fff9) !important; }
+    .interview-topic-card:nth-child(6n+4), .interview-section:nth-child(6n+4) { background: linear-gradient(135deg, #ffffff, #fffdf2) !important; }
+    .interview-topic-card:nth-child(6n+5), .interview-section:nth-child(6n+5) { background: linear-gradient(135deg, #ffffff, #f8f5ff) !important; }
+    .interview-topic-card:nth-child(6n+6), .interview-section:nth-child(6n+6) { background: linear-gradient(135deg, #ffffff, #f3fffd) !important; }
+    .interview-section {
+      border-color: color-mix(in srgb, var(--topicLine) 70%, #ffffff) !important;
+      box-shadow: 0 7px 18px rgba(65,56,110,.055) !important;
+    }
+    .interview-section-title {
+      background: linear-gradient(135deg, var(--topicSoft), #ffffff) !important;
+      border: 1px solid var(--topicLine) !important;
+    }
+    .interview-topline button {
+      background: linear-gradient(135deg, #fffaf1, #f2fbff) !important;
+      color: #5b5674 !important;
+      border: 1px solid #e2dff4 !important;
+      box-shadow: 0 5px 12px rgba(65,56,110,.06) !important;
+    }
+
+    @media (max-width: 860px) {
+      #home .top { display: block !important; }
+      #home .home-actions,
+      #home .home-actions.home-actions-fixed {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        max-width: none !important;
+        margin-top: 12px !important;
+        gap: 7px !important;
+      }
+      #home .home-actions > button,
+      #home .home-actions.home-actions-fixed > button {
+        height: 38px !important;
+        min-height: 38px !important;
+        max-height: 38px !important;
+        padding: 6px 3px !important;
+        font-size: 11.8px !important;
+        border-radius: 13px !important;
+        letter-spacing: -0.05em !important;
+      }
+      .interview-area-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      .interview-area-btn { min-height: 44px !important; font-size: 13.5px !important; }
+    }
+    @media (max-width: 420px) {
+      #home .home-actions > button,
+      #home .home-actions.home-actions-fixed > button {
+        font-size: 10.8px !important;
+        padding-left: 1px !important;
+        padding-right: 1px !important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // 홈 하단에는 입력 패널만 남기고, 버튼은 상단 3*3 메뉴로 이동
+  window.renderRememberMemo = function() {
+    const saved = getRememberMemo();
+    return `<div class="memo-inline-panel" id="todayMemoPanel">
+      <div class="memo-small-guide">오늘 떠오른 생각이나 헷갈리는 내용은 이 기기에만 저장됩니다. 오래 보관할 내용은 기억할 것에 추가하세요.</div>
+      <textarea id="rememberMemo" placeholder="오늘 꼭 기억할 것, 헷갈리는 것, 다시 볼 내용을 적어두세요.">${escapeHtml(saved)}</textarea>
+      <div class="memo-row">
+        <button class="primary" onclick="saveLocalRememberMemo()">💾 이 기기에 저장</button>
+        <button class="good" onclick="addCurrentMemoToRemember()">➕ 기억할 것에 추가</button>
+        <button class="warn" onclick="deleteLocalRememberMemo()">🗑 삭제</button>
+        <span class="memo-status" id="rememberMemoStatus">닫아도 오늘 메모는 이 기기에 남습니다.</span>
+      </div>
+    </div>`;
+  };
+
+  window.updateHomeRememberButtonFinal = function(){
+    const btn = document.getElementById('homeRememberButton');
+    if (!btn) return;
+    const count = (typeof getRememberEntries === 'function' ? getRememberEntries().length : ((DB.appMemos || []).length));
+    btn.textContent = `💭 기억할 것${count ? ' (' + count + ')' : ''}`;
+  };
+
+  const baseRenderHome = window.renderHome;
+  if (typeof baseRenderHome === 'function') {
+    window.renderHome = function(){
+      baseRenderHome();
+      updateHomeRememberButtonFinal();
+    };
+  }
+
+  const baseRenderRememberList = window.renderRememberList;
+  if (typeof baseRenderRememberList === 'function') {
+    window.renderRememberList = function(state){
+      baseRenderRememberList(state);
+      updateHomeRememberButtonFinal();
+    };
+  }
+
+  function setInterviewListButtonVisible(visible){
+    const btn = document.querySelector('#interview .top-mini-actions .list-back');
+    if (btn) btn.style.display = visible ? 'inline-flex' : 'none';
+  }
+
+  // 교감면접 영역 목록: 헤더의 '영역 목록' 버튼은 숨김
+  window.openInterview = function(){
+    showView('interview');
+    setInterviewListButtonVisible(false);
+    renderInterviewAreas();
+    if (typeof setAppState === 'function') setAppState({ view:'interview', interviewArea:'', interviewId:'' });
+  };
+
+  // 교감면접 영역 안: 중복되는 '영역 목록' 버튼 제거
+  window.openInterviewArea = function(areaEncoded){
+    const area = decodeURIComponent(String(areaEncoded || ''));
+    showView('interview');
+    setInterviewListButtonVisible(true);
+    const rows = (Array.isArray(DB.topic2) ? DB.topic2 : []).filter(r => String(r.area || '') === area);
+    const allAreas = Object.keys(groupBy((Array.isArray(DB.topic2) ? DB.topic2 : []), r => r.area || '기타'));
+    const idx = allAreas.indexOf(area);
+    const c = (typeof AREA_COLORS !== 'undefined' && AREA_COLORS[area]) ? AREA_COLORS[area] : (TOPIC_COLORS[Math.max(0, idx) % TOPIC_COLORS.length] || TOPIC_COLORS[0]);
+    const box = document.getElementById('interviewContent');
+    if (!box) return;
+    box.innerHTML = `<div class="interview-detail-head" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+        <div class="interview-detail-title">${escapeHtml(area)}</div>
+        <div class="small">총 ${rows.length}개 주제입니다. 주제를 누르면 장학사 관점 지원방안이 펼쳐집니다.</div>
+      </div>
+      <div class="interview-topic-grid">${rows.map((r, i) => {
+        const tags = splitList(r.keywords || '').slice(0, 4).map(k => `<span class="interview-chip">${escapeHtml(k)}</span>`).join('');
+        return `<div class="interview-topic-card" onclick="openInterviewDetail('${encodeURIComponent(String(r.id || ''))}')" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+          <span class="interview-topic-no">${escapeHtml(r.no || String(i+1))}</span>
+          <div class="interview-topic-title">${escapeHtml(r.topic || '')}</div>
+          ${tags ? `<div class="interview-keywords">${tags}</div>` : ''}
+        </div>`;
+      }).join('')}</div>`;
+    if (typeof setAppState === 'function') setAppState({ view:'interview', interviewArea:area, interviewId:'' });
+  };
+
+  // 교감면접 상세: '영역 목록' 중복 대신 '주제 목록'과 이전/다음만 표시
+  window.openInterviewDetail = function(idEncoded){
+    const id = decodeURIComponent(String(idEncoded || ''));
+    const rows = Array.isArray(DB.topic2) ? DB.topic2 : [];
+    const r = rows.find(x => String(x.id) === id);
+    if (!r) return openInterview();
+    showView('interview');
+    setInterviewListButtonVisible(true);
+    const areaRows = rows.filter(x => x.area === r.area);
+    const allAreas = Object.keys(groupBy(rows, x => x.area || '기타'));
+    const areaIndex = allAreas.indexOf(r.area);
+    const c = (typeof AREA_COLORS !== 'undefined' && AREA_COLORS[r.area]) ? AREA_COLORS[r.area] : (TOPIC_COLORS[Math.max(0, areaIndex) % TOPIC_COLORS.length] || TOPIC_COLORS[0]);
+    const idx = areaRows.findIndex(x => x.id === r.id);
+    const prev = idx > 0 ? areaRows[idx - 1] : null;
+    const next = idx < areaRows.length - 1 ? areaRows[idx + 1] : null;
+    const sections = [
+      ['🧭 장학사 관점', r.viewpoint],
+      ['1. 정책 설계', r.policyDesign],
+      ['2. 학교 간 격차 해소', r.gapSupport],
+      ['3. 현장 실행 지원', r.fieldSupport],
+      ['4. 학생·교원 통합지원', r.integratedSupport],
+      ['5. 지역·기관 연계', r.localConnection],
+      ['면접 핵심 키워드', r.keywords]
+    ];
+    const content = document.getElementById('interviewContent');
+    if (!content) return;
+    content.innerHTML = `<div class="interview-topline">
+        <button onclick="openInterviewArea('${encodeURIComponent(String(r.area || ''))}')">← 주제 목록</button>
+        ${prev ? `<button class="topic-nav-btn prev" onclick="openInterviewDetail('${encodeURIComponent(String(prev.id || ''))}')">← 이전 주제</button>` : ''}
+        ${next ? `<button class="topic-nav-btn next" onclick="openInterviewDetail('${encodeURIComponent(String(next.id || ''))}')">다음 주제 →</button>` : ''}
+      </div>
+      <div class="interview-detail-head" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+        <div class="small">${escapeHtml(r.area || '')} · ${escapeHtml(r.no || '')}</div>
+        <div class="interview-detail-title">${escapeHtml(r.topic || '')}</div>
+      </div>
+      <div class="interview-section-grid" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+        ${sections.filter(([title, body]) => String(body || '').trim()).map(([title, body]) => {
+          const isKeyword = title.includes('키워드');
+          const bodyHtml = isKeyword
+            ? `<div class="interview-keywords">${splitList(body).slice(0, 12).map(k => `<span class="interview-chip">${escapeHtml(k)}</span>`).join('')}</div>`
+            : `<div class="interview-section-body">${escapeHtml(body).replace(/\n/g, '<br>')}</div>`;
+          return `<div class="interview-section"><div class="interview-section-title">${escapeHtml(title)}</div>${bodyHtml}</div>`;
+        }).join('')}
+      </div>`;
+    if (typeof setAppState === 'function') setAppState({ view:'interview', interviewArea:r.area, interviewId:r.id });
   };
 })();
 
