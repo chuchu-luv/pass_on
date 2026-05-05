@@ -1342,6 +1342,34 @@
   }
 </style>
 
+
+<style id="news-keyword-final-position-fix">
+  /* 뉴스 목록: 주제어만 표시, 상세: 기사 핵심 아래 키워드 칩 표시 */
+  #news .news-policy-chips {
+    margin: 8px 0 12px !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+  #news .news-policy-chip {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 5px 10px !important;
+    border-radius: 999px !important;
+    background: #eefaf6 !important;
+    border: 1px solid #c8eee0 !important;
+    color: #24795f !important;
+    font-size: 13.5px !important;
+    font-weight: 900 !important;
+    line-height: 1.1 !important;
+  }
+  #news .news-topic-title {
+    white-space: normal !important;
+    word-break: keep-all !important;
+    line-height: 1.25 !important;
+  }
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -4874,6 +4902,696 @@ initApp();
     }
   `;
   document.head.appendChild(style);
+})();
+</script>
+
+
+
+<!-- === FINAL NEWS LIST PATCH 2026-05-05: 뉴스 목록은 주제어만, 최근 입력 상단 === -->
+<style id="news-compact-final-patch">
+  #news .sub {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: initial !important;
+    line-height: 1.45 !important;
+  }
+  .news-compact-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important;
+    gap: 10px !important;
+    margin-top: 12px !important;
+  }
+  .news-compact-card {
+    cursor: pointer !important;
+    border-radius: 18px !important;
+    border: 1px solid var(--topicLine, #d9d0ff) !important;
+    background: linear-gradient(135deg, rgba(255,255,255,.97), var(--topicSoft, #f7f4ff)) !important;
+    padding: 12px 14px !important;
+    min-height: 72px !important;
+    box-shadow: 0 5px 14px rgba(65,56,110,.055) !important;
+    transition: transform .14s ease, box-shadow .14s ease !important;
+    display: flex !important;
+    gap: 10px !important;
+    align-items: center !important;
+  }
+  .news-compact-card:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 22px rgba(65,56,110,.11) !important;
+  }
+  .news-compact-badge {
+    flex: 0 0 auto !important;
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 15px !important;
+    display: inline-grid !important;
+    place-items: center !important;
+    background: var(--topic, #7c61ff) !important;
+    color: #fff !important;
+    font-size: 14px !important;
+    font-weight: 900 !important;
+    box-shadow: 0 5px 12px rgba(65,56,110,.10) !important;
+  }
+  .news-compact-title {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    color: var(--topic, #5949d8) !important;
+    font-size: 18px !important;
+    font-weight: 900 !important;
+    line-height: 1.28 !important;
+    word-break: keep-all !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+  .news-compact-guide {
+    margin: 8px 0 2px !important;
+    color: #706b83 !important;
+    font-size: 15px !important;
+    line-height: 1.45 !important;
+  }
+  @media (max-width: 760px) {
+    .news-compact-grid { grid-template-columns: 1fr !important; gap: 8px !important; }
+    .news-compact-card { min-height: 64px !important; padding: 10px 12px !important; border-radius: 16px !important; }
+    .news-compact-badge { width: 36px !important; height: 36px !important; border-radius: 13px !important; font-size: 12px !important; }
+    .news-compact-title { font-size: 16.5px !important; }
+  }
+</style>
+<script id="news-compact-final-patch-script">
+(function(){
+  function newsRowsNewestFirstFinal(){
+    const rows = Array.isArray(DB && DB.news) ? DB.news : [];
+    // 구글시트에 아래로 추가한 최신 뉴스가 위에 보이도록 원래 행 순서를 뒤집습니다.
+    return rows.map((row, originalIndex) => ({ row, originalIndex })).reverse();
+  }
+
+  window.renderNewsCards = function() {
+    const entries = newsRowsNewestFirstFinal();
+    if (!entries.length) {
+      return '<div class="card empty-news-card"><div class="empty-news-title">아직 정리된 뉴스가 없습니다.</div><div class="empty-news-text">뉴스 기사를 분석한 내용을 <b>news</b> 시트에 추가하면 이곳에 카드로 표시됩니다.</div></div>';
+    }
+    return '<div class="news-compact-guide">최근 입력한 뉴스가 위에 보입니다. 목록에서는 기사 핵심만 확인하고, 카드를 누르면 상세 분석이 열립니다.</div>' +
+      '<div class="news-compact-grid">' + entries.map((entry, displayIndex) => {
+        const r = entry.row || {};
+        const c = TOPIC_COLORS[displayIndex % TOPIC_COLORS.length];
+        const title = String(r.articleCore || ('뉴스 ' + (entry.originalIndex + 1))).trim();
+        return `<div class="news-compact-card" onclick="openNewsDetail(${entry.originalIndex})" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+          <div class="news-compact-badge">${displayIndex + 1}</div>
+          <div class="news-compact-title">${escapeHtml(title)}</div>
+        </div>`;
+      }).join('') + '</div>';
+  };
+
+  window.openNews = function() {
+    showView('news');
+    const box = document.getElementById('newsContent');
+    if (!box) return;
+    box.innerHTML = renderNewsCards();
+    if (typeof setAppState === 'function') setAppState({ view: 'news', newsIndex: '' });
+  };
+
+  window.openNewsDetail = function(index) {
+    const rows = getNewsRows();
+    const r = rows[index];
+    if (!r) return openNews();
+    const displayIndex = Math.max(0, rows.length - 1 - Number(index));
+    const c = TOPIC_COLORS[displayIndex % TOPIC_COLORS.length];
+    const supports = [r.support1, r.support2, r.support3, r.support4, r.support5];
+    const box = document.getElementById('newsContent');
+    if (!box) return;
+    box.innerHTML = `
+      <div class="news-detail-actions"><button class="ghost" onclick="openNews()">← 뉴스 목록</button></div>
+      <div class="section-box news-detail-wrap" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]};border-color:${c[2]}">
+        <div class="news-detail-title">📰 ${escapeHtml(r.articleCore || '기사 핵심 없음')}</div>
+        ${renderNewsBlock('실태분석', r.issue)}
+        ${renderNewsBlock('시사점', r.implication)}
+        ${renderNewsBlock('관련 충남 정책', r.policy)}
+        ${renderNewsBlock('서론', r.intro)}
+        <div class="news-support-grid">${supports.map((text, idx) => renderNewsBlock('지원방안 ' + (idx + 1), text)).join('')}</div>
+        ${renderNewsBlock('기대효과', r.effect)}
+      </div>`;
+    if (typeof setAppState === 'function') setAppState({ view: 'news', newsIndex: String(index) });
+  };
+})();
+</script>
+
+
+<style id="memo-keyword-news-topic-final-style">
+  .remember-filter-bar {
+    display:flex !important;
+    flex-wrap:wrap !important;
+    gap:7px !important;
+    margin:10px 0 14px !important;
+    align-items:center !important;
+  }
+  .remember-filter-chip {
+    min-height:auto !important;
+    padding:7px 12px !important;
+    border-radius:999px !important;
+    font-size:15px !important;
+    background:#fff !important;
+    border:1px solid #ddd4ff !important;
+    color:#6354b8 !important;
+    box-shadow:0 3px 10px rgba(79,61,180,.06) !important;
+  }
+  .remember-filter-chip.active {
+    background:linear-gradient(135deg,#efe9ff,#e7f5ff) !important;
+    border-color:#cfc3ff !important;
+    color:#4d3db4 !important;
+  }
+  .remember-keyword-row {
+    display:flex !important;
+    flex-wrap:wrap !important;
+    gap:5px !important;
+    margin:2px 0 10px !important;
+  }
+  .remember-keyword-chip {
+    display:inline-flex !important;
+    align-items:center !important;
+    padding:4px 9px !important;
+    border-radius:999px !important;
+    background:rgba(255,255,255,.75) !important;
+    border:1px solid var(--memoLine,#d9dcff) !important;
+    color:var(--memoAccent,#7c61ff) !important;
+    font-size:13px !important;
+    font-weight:900 !important;
+    line-height:1.1 !important;
+  }
+  .remember-keyword-input {
+    width:100% !important;
+    margin:8px 0 10px !important;
+    padding:10px 12px !important;
+    border-radius:14px !important;
+    border:1px solid #cfdcff !important;
+    background:#fff !important;
+    font-family:'OmuDaye', sans-serif !important;
+    font-size:16px !important;
+  }
+  .news-topic-title {
+    flex:1 1 auto !important;
+    min-width:0 !important;
+    color:var(--topic,#5949d8) !important;
+    font-size:18px !important;
+    font-weight:900 !important;
+    line-height:1.28 !important;
+    word-break:keep-all !important;
+  }
+  .news-policy-chips {
+    display:flex !important;
+    flex-wrap:wrap !important;
+    gap:5px !important;
+    margin-top:6px !important;
+  }
+  .news-policy-chip {
+    display:inline-flex !important;
+    align-items:center !important;
+    padding:3px 8px !important;
+    border-radius:999px !important;
+    background:var(--topicSoft,#f0edff) !important;
+    color:var(--topic,#6b66ff) !important;
+    border:1px solid var(--topicLine,#d9dcff) !important;
+    font-size:12px !important;
+    font-weight:900 !important;
+  }
+  @media (max-width:760px) {
+    .remember-filter-chip { font-size:14px !important; padding:6px 10px !important; }
+    .news-topic-title { font-size:16.5px !important; }
+  }
+</style>
+<script id="memo-keyword-news-topic-final-script">
+(function(){
+  window.REMEMBER_ACTIVE_KEYWORD = '';
+
+  function textOf(v){ return String(v == null ? '' : v).trim(); }
+  function splitKeywordsFinal(text){
+    return textOf(text)
+      .replace(/#/g,'')
+      .split(/[,，;；\n\/|]+/)
+      .map(s => s.trim())
+      .filter(Boolean);
+  }
+  window.splitKeywordsFinal = splitKeywordsFinal;
+
+  function getValueByPossibleHeaders(row, keys){
+    if (!row || typeof row !== 'object') return '';
+    const rowKeys = Object.keys(row);
+    const norm = s => String(s || '').replace(/\s+/g,'').toLowerCase();
+    for (const wanted of keys) {
+      const nw = norm(wanted);
+      for (const real of rowKeys) {
+        if (norm(real) === nw) return textOf(row[real]);
+      }
+    }
+    return '';
+  }
+
+  const oldNormalizeNewsRow = window.normalizeNewsRow || normalizeNewsRow;
+  window.normalizeNewsRow = normalizeNewsRow = function(r){
+    const base = oldNormalizeNewsRow ? oldNormalizeNewsRow(r) : {};
+    const v = (typeof rawRowVals === 'function' ? rawRowVals(r) : Object.values(r || {})).map(textOf);
+    const topic = getValueByPossibleHeaders(r, ['newsTopic','news_topic','topic','주제어','뉴스주제','뉴스 주제','주제','키워드제목']) || textOf(base.newsTopic || base.topic || '');
+    const keywords = getValueByPossibleHeaders(r, ['newsKeywords','news_keywords','policyKeywords','policy_keywords','keywords','keyword','관련키워드','관련 키워드','정책키워드','정책 키워드','충남정책용어','충남 정책용어','정책용어','정책 용어']) || textOf(base.newsKeywords || base.keywords || '');
+    return Object.assign({}, base, {
+      newsTopic: topic,
+      newsKeywords: keywords
+    });
+  };
+
+  const oldNormalizeAppMemoSafe = window.normalizeAppMemoSafe || normalizeAppMemoSafe;
+  window.normalizeAppMemoSafe = normalizeAppMemoSafe = function(r){
+    const base = oldNormalizeAppMemoSafe ? oldNormalizeAppMemoSafe(r) : {id:'',key:'',memo:'',createdAt:'',updatedAt:''};
+    const vals = Object.values(r || {}).map(textOf);
+    let keywords = getValueByPossibleHeaders(r, ['keywords','keyword','키워드','태그','tags','tag']);
+    // 헤더가 아직 반영되지 않은 상태에서 5열 순서(id/memo/keywords/createdAt/updatedAt)로 온 경우 보정
+    if (!keywords && vals.length >= 5) {
+      const candidate = vals[2];
+      if (candidate && !/^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/.test(candidate)) keywords = candidate;
+    }
+    return Object.assign({}, base, { keywords: textOf(keywords) });
+  };
+
+  window.getRememberEntries = function(){
+    return (Array.isArray(DB && DB.appMemos) ? DB.appMemos : [])
+      .map(normalizeAppMemoSafe)
+      .filter(m => textOf(m.memo))
+      .sort((a,b) => String(b.updatedAt || b.createdAt || '').localeCompare(String(a.updatedAt || a.createdAt || '')));
+  };
+
+  function getAllMemoKeywords(){
+    const set = new Set();
+    getRememberEntries().forEach(m => splitKeywordsFinal(m.keywords).forEach(k => set.add(k)));
+    return Array.from(set).sort((a,b)=>a.localeCompare(b,'ko'));
+  }
+
+  window.setRememberKeywordFilter = function(keyword){
+    window.REMEMBER_ACTIVE_KEYWORD = textOf(keyword);
+    renderRememberList();
+  };
+
+  function renderRememberFilterBar(){
+    const keywords = getAllMemoKeywords();
+    if (!keywords.length) return '';
+    const active = textOf(window.REMEMBER_ACTIVE_KEYWORD);
+    return '<div class="remember-filter-bar">'
+      + '<button class="remember-filter-chip ' + (!active ? 'active' : '') + '" onclick="setRememberKeywordFilter(\'\')">메모 전체</button>'
+      + keywords.map(k => '<button class="remember-filter-chip ' + (active === k ? 'active' : '') + '" onclick="setRememberKeywordFilter(\'' + escapeAttr(k).replace(/'/g,'&#39;') + '\')">#' + escapeHtml(k) + '</button>').join('')
+      + '</div>';
+  }
+
+  window.renderRememberCard = function(m, index){
+    const normalized = normalizeAppMemoSafe(m || {});
+    const id = normalized.id || '';
+    const memo = normalized.memo || '';
+    const keywords = splitKeywordsFinal(normalized.keywords);
+    const memoArg = encodeJsArg(memo);
+    const key = normalized.key || id || makeMemoDomKeyFinal(memo);
+    const domId = 'remember-' + String(key).replace(/[^a-zA-Z0-9_-]/g,'').slice(0,40);
+    const p = rememberPastelFinal(Number(index || 0));
+    const chips = keywords.length ? '<div class="remember-keyword-row">' + keywords.map(k => '<span class="remember-keyword-chip">#' + escapeHtml(k) + '</span>').join('') + '</div>' : '';
+    return '<div class="remember-card pastel-remember-card" id="' + escapeAttr(domId) + '" style="--memoBg:' + p[0] + ';--memoLine:' + p[1] + ';--memoAccent:' + p[2] + '">'
+      + '<div class="remember-head"><div class="remember-label" style="color:' + p[2] + '">기억 메모</div><div class="remember-tools">'
+      + '<button type="button" class="icon-btn soft-blue" title="수정" onclick="editRememberMemo(\'' + escapeAttr(id) + '\',\'' + memoArg + '\')">✏️</button>'
+      + '<button type="button" class="icon-btn warn" title="삭제" onclick="deleteRememberEntry(\'' + escapeAttr(id) + '\',\'' + memoArg + '\')">🗑</button>'
+      + '</div></div>' + chips + '<div class="remember-content">' + escapeHtml(memo).replace(/\n/g,'<br>') + '</div></div>';
+  };
+
+  window.renderRememberList = function(state){
+    const box = document.getElementById('rememberList');
+    if (!box) return;
+    if (state === 'loading') {
+      box.innerHTML = '<div class="remember-empty">저장된 메모를 불러오는 중입니다...</div>';
+      return;
+    }
+    const active = textOf(window.REMEMBER_ACTIVE_KEYWORD);
+    let entries = getRememberEntries();
+    if (active) entries = entries.filter(m => splitKeywordsFinal(m.keywords).includes(active));
+    const filter = renderRememberFilterBar();
+    if (!entries.length) {
+      box.innerHTML = filter + '<div class="remember-empty">' + (active ? '#' + escapeHtml(active) + ' 키워드가 달린 메모가 없습니다.' : '아직 저장된 기억 메모가 없습니다. 메모 추가 버튼으로 바로 저장할 수 있습니다.') + '</div>';
+      return;
+    }
+    box.innerHTML = filter + '<div class="remember-list">' + entries.map((m, i) => renderRememberCard(m, i)).join('') + '</div>';
+  };
+
+  const oldShowRememberAddBox = window.showRememberAddBox;
+  window.showRememberAddBox = function(){
+    if (oldShowRememberAddBox) oldShowRememberAddBox();
+    const panel = document.getElementById('rememberAddPanel');
+    const textarea = document.getElementById('rememberNewMemo');
+    if (panel && textarea && !document.getElementById('rememberNewKeywords')) {
+      const input = document.createElement('input');
+      input.id = 'rememberNewKeywords';
+      input.className = 'remember-keyword-input';
+      input.placeholder = '키워드 입력 예: 기초학력, 온돌봄, 면접기출';
+      textarea.insertAdjacentElement('afterend', input);
+    }
+  };
+
+  window.saveNewRememberMemo = async function(){
+    const el = document.getElementById('rememberNewMemo');
+    const kwEl = document.getElementById('rememberNewKeywords');
+    const memo = (el ? el.value : '').trim();
+    const keywords = (kwEl ? kwEl.value : '').trim();
+    if (!memo) { alert('저장할 메모가 없습니다.'); return; }
+    try {
+      const result = await callMemoApi('addMemo', {memo, keywords});
+      const entry = {id:result.id, key:result.id, memo, keywords, createdAt:result.createdAt || result.updatedAt || '', updatedAt:result.updatedAt || result.createdAt || ''};
+      DB.appMemos = [entry].concat(DB.appMemos || []);
+      localStorage.setItem('memoryAppCache', JSON.stringify(DB));
+      if (el) el.value = '';
+      if (kwEl) kwEl.value = '';
+      if (typeof hideRememberAddBox === 'function') hideRememberAddBox();
+      renderRememberList();
+      await refreshRememberMemos(false);
+    } catch (err) {
+      alert('저장 실패: ' + (err && err.message ? err.message : 'Apps Script 배포와 권한을 확인해 주세요.'));
+      console.warn(err);
+    }
+  };
+
+  window.editRememberMemo = function(idOrIndex, memoEncoded){
+    let id = '';
+    let oldMemo = '';
+    if (typeof memoEncoded !== 'undefined') {
+      id = String(idOrIndex || '').trim();
+      oldMemo = decodeJsArg(memoEncoded);
+    } else {
+      const entries = getRememberEntries();
+      const m = entries[Number(idOrIndex)];
+      if (m) { id = String(m.id || m.key || '').trim(); oldMemo = String(m.memo || '').trim(); }
+    }
+    const found = findRememberMemo(id, oldMemo);
+    const oldKeywords = found ? textOf(normalizeAppMemoSafe(found).keywords) : '';
+    if (found) { id = String(found.id || found.key || id || '').trim(); oldMemo = String(found.memo || oldMemo || '').trim(); }
+    if (!oldMemo) { alert('수정할 메모를 찾지 못했습니다. 새로고침 후 다시 눌러 주세요.'); return; }
+    const domId = rememberDomIdBy(id, oldMemo);
+    const card = document.getElementById(domId);
+    if (!card) { alert('수정할 메모 카드를 찾지 못했습니다. 새로고침 후 다시 눌러 주세요.'); return; }
+    const safeId = encodeJsArg(id);
+    const safeOldMemo = encodeJsArg(oldMemo);
+    card.innerHTML = '<div class="remember-head"><div class="remember-label">메모 수정</div></div>'
+      + '<textarea class="remember-edit" id="remember-edit-box">' + escapeHtml(oldMemo) + '</textarea>'
+      + '<input class="remember-keyword-input" id="remember-edit-keywords" placeholder="키워드 입력 예: 기초학력, 온돌봄" value="' + escapeAttr(oldKeywords) + '">'
+      + '<div class="memo-row">'
+      + '<button type="button" class="primary" onclick="saveEditedRememberMemo(\'' + safeId + '\',\'' + safeOldMemo + '\')">저장</button>'
+      + '<button type="button" class="ghost" onclick="renderRememberList()">취소</button>'
+      + '</div>';
+    setTimeout(() => { const el = document.getElementById('remember-edit-box'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }, 50);
+  };
+
+  window.saveEditedRememberMemo = async function(idEncoded, oldMemoEncoded){
+    const id = decodeJsArg(idEncoded);
+    const oldMemo = decodeJsArg(oldMemoEncoded);
+    const el = document.getElementById('remember-edit-box');
+    const kwEl = document.getElementById('remember-edit-keywords');
+    const memo = el ? el.value.trim() : '';
+    const keywords = kwEl ? kwEl.value.trim() : '';
+    if (!memo) { alert('메모 내용이 비어 있습니다.'); return; }
+    try {
+      const result = await callMemoApi('updateMemo', { id: id || '', memo, oldMemo, keywords });
+      if (!result.ok) throw new Error(result.error || '수정 실패');
+      const finalId = result.id || id || '';
+      DB.appMemos = (DB.appMemos || []).map(item => {
+        const n = normalizeAppMemoSafe(item);
+        const itemId = String(n.id || n.key || '').trim();
+        const itemMemo = String(n.memo || '').trim();
+        const matched = finalId && itemId === finalId ? true : itemMemo === oldMemo;
+        return matched ? Object.assign({}, item, { id: finalId, key: finalId || n.key, memo, keywords, updatedAt: result.updatedAt || nowLocalString() }) : item;
+      });
+      localStorage.setItem('memoryAppCache', JSON.stringify(DB));
+      await refreshRememberMemos(false);
+      renderRememberList();
+    } catch (err) {
+      alert('수정 실패: ' + (err && err.message ? err.message : 'Apps Script 배포와 권한을 확인해 주세요.'));
+      console.warn(err);
+    }
+  };
+
+  // news: 주제어 중심 목록 + 정책 키워드 칩
+  function newsDisplayTitle(row, fallbackIndex){
+    const subject = textOf(row.newsTopic || row.topic || row.subject);
+    if (subject) return subject;
+    return '뉴스 ' + fallbackIndex;
+  }
+  function newsPolicyChips(row){
+    const keys = splitKeywordsFinal(row.newsKeywords || row.keywords || '');
+    if (!keys.length) return '';
+    return '<div class="news-policy-chips">' + keys.slice(0,4).map(k => '<span class="news-policy-chip">' + escapeHtml(k) + '</span>').join('') + '</div>';
+  }
+  function newsRowsNewestFirstFinal(){
+    const rows = Array.isArray(DB && DB.news) ? DB.news : [];
+    return rows.map((row, originalIndex) => ({ row, originalIndex })).reverse();
+  }
+  window.renderNewsCards = function(){
+    const entries = newsRowsNewestFirstFinal();
+    if (!entries.length) {
+      return '<div class="card empty-news-card"><div class="empty-news-title">아직 정리된 뉴스가 없습니다.</div><div class="empty-news-text">뉴스 기사를 분석한 내용을 <b>news</b> 시트에 추가하면 이곳에 카드로 표시됩니다.</div></div>';
+    }
+    return '<div class="news-compact-guide">최근 입력한 뉴스가 위에 보입니다. 목록에서는 뉴스 주제만 확인하고, 카드를 누르면 상세 분석이 열립니다.</div>'
+      + '<div class="news-compact-grid">' + entries.map((entry, displayIndex) => {
+        const r = entry.row || {};
+        const c = TOPIC_COLORS[displayIndex % TOPIC_COLORS.length];
+        const title = newsDisplayTitle(r, displayIndex + 1);
+        return `<div class="news-compact-card" onclick="openNewsDetail(${entry.originalIndex})" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+          <div class="news-compact-badge">${displayIndex + 1}</div>
+          <div style="min-width:0;flex:1 1 auto;"><div class="news-topic-title">${escapeHtml(title)}</div>${newsPolicyChips(r)}</div>
+        </div>`;
+      }).join('') + '</div>';
+  };
+  window.openNews = function(){
+    showView('news');
+    const box = document.getElementById('newsContent');
+    if (!box) return;
+    box.innerHTML = renderNewsCards();
+    if (typeof setAppState === 'function') setAppState({ view: 'news', newsIndex: '' });
+  };
+  window.openNewsDetail = function(index){
+    const rows = getNewsRows();
+    const r = rows[index];
+    if (!r) return openNews();
+    const displayIndex = Math.max(0, rows.length - 1 - Number(index));
+    const c = TOPIC_COLORS[displayIndex % TOPIC_COLORS.length];
+    const supports = [r.support1, r.support2, r.support3, r.support4, r.support5];
+    const box = document.getElementById('newsContent');
+    if (!box) return;
+    const title = newsDisplayTitle(r, displayIndex + 1);
+    box.innerHTML = `
+      <div class="news-detail-actions"><button class="ghost" onclick="openNews()">← 뉴스 목록</button></div>
+      <div class="section-box news-detail-wrap" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]};border-color:${c[2]}">
+        <div class="news-detail-title">📰 ${escapeHtml(title)}</div>
+        ${renderNewsBlock('기사 핵심', r.articleCore)}
+        ${newsPolicyChips(r)}
+        ${renderNewsBlock('실태분석', r.issue)}
+        ${renderNewsBlock('시사점', r.implication)}
+        ${renderNewsBlock('관련 충남 정책', r.policy)}
+        ${renderNewsBlock('서론', r.intro)}
+        <div class="news-support-grid">${supports.map((text, idx) => renderNewsBlock('지원방안 ' + (idx + 1), text)).join('')}</div>
+        ${renderNewsBlock('기대효과', r.effect)}
+      </div>`;
+    if (typeof setAppState === 'function') setAppState({ view: 'news', newsIndex: String(index) });
+  };
+})();
+</script>
+
+
+<style id="news-keyword-visible-final-fix">
+  .news-core-keyword-wrap {
+    margin: 10px 0 18px 0 !important;
+    padding: 13px 15px !important;
+    border-radius: 18px !important;
+    background: linear-gradient(135deg, #f7fbff, #fff8fc) !important;
+    border: 1px solid rgba(124, 97, 255, .18) !important;
+  }
+  .news-core-keyword-label {
+    display: inline-flex !important;
+    align-items: center !important;
+    padding: 4px 9px !important;
+    border-radius: 999px !important;
+    background: #eef4ff !important;
+    color: #3568c7 !important;
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    margin: 0 7px 5px 0 !important;
+  }
+  .news-core-keyword-chips {
+    display: inline-flex !important;
+    flex-wrap: wrap !important;
+    gap: 5px !important;
+    vertical-align: middle !important;
+  }
+  .news-core-keyword-chip {
+    display: inline-flex !important;
+    align-items: center !important;
+    border-radius: 999px !important;
+    padding: 5px 10px !important;
+    background: #f0ebff !important;
+    color: #5e46c9 !important;
+    border: 1px solid #ddd2ff !important;
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    line-height: 1.1 !important;
+  }
+</style>
+<script id="news-keyword-visible-final-fix-script">
+(function(){
+  function txt(v){ return String(v == null ? '' : v).trim(); }
+  function vals(row){
+    if (typeof rawRowVals === 'function') return rawRowVals(row).map(txt);
+    return Object.values(row || {}).map(txt);
+  }
+  function normHeader(s){ return String(s || '').replace(/\s+/g,'').toLowerCase(); }
+  function byHeader(row, keys){
+    const rowKeys = Object.keys(row || {});
+    for (const wanted of keys) {
+      const nw = normHeader(wanted);
+      for (const real of rowKeys) {
+        if (normHeader(real) === nw) return txt(row[real]);
+      }
+    }
+    return '';
+  }
+  function splitNewsKeys(text){
+    return txt(text).replace(/#/g,'').split(/[,，;；\n\/|]+/).map(s=>s.trim()).filter(Boolean);
+  }
+  window.splitNewsKeysFinal = splitNewsKeys;
+
+  const previousNormalizeNewsRow = window.normalizeNewsRow || normalizeNewsRow;
+  window.normalizeNewsRow = normalizeNewsRow = function(row){
+    const base = previousNormalizeNewsRow ? previousNormalizeNewsRow(row) : {};
+    const v = vals(row);
+
+    // 기존 news 기본 11열 뒤에 주제어, 키워드를 붙인 경우까지 강제 보정
+    const topic = byHeader(row, ['주제어','뉴스주제어','뉴스 주제어','newsTopic','news_topic','topic','subject','주제'])
+      || txt(base.newsTopic || base.topic || '')
+      || txt(v[11] || '');
+
+    const keys = byHeader(row, ['키워드','관련키워드','관련 키워드','정책키워드','정책 키워드','충남정책용어','충남 정책용어','정책용어','정책 용어','newsKeywords','news_keywords','policyKeywords','policy_keywords','keywords','keyword'])
+      || txt(base.newsKeywords || base.keywords || '')
+      || txt(v[12] || '');
+
+    return Object.assign({}, base, { newsTopic: topic, topic: topic, newsKeywords: keys, keywords: keys });
+  };
+
+  function newsTitleOnly(row, fallbackIndex){
+    return txt(row.newsTopic || row.topic || row.subject) || ('뉴스 ' + fallbackIndex);
+  }
+  function newsKeywordBox(row){
+    const keys = splitNewsKeys(row.newsKeywords || row.keywords || '');
+    if (!keys.length) return '';
+    return '<div class="news-core-keyword-wrap">'
+      + '<span class="news-core-keyword-label">관련 키워드</span>'
+      + '<span class="news-core-keyword-chips">'
+      + keys.map(k => '<span class="news-core-keyword-chip">#' + escapeHtml(k) + '</span>').join('')
+      + '</span></div>';
+  }
+  function newsRowsRecent(){
+    const rows = Array.isArray(DB && DB.news) ? DB.news : [];
+    return rows.map((row, originalIndex)=>({row, originalIndex})).reverse();
+  }
+
+  window.renderNewsCards = function(){
+    const entries = newsRowsRecent();
+    if (!entries.length) {
+      return '<div class="card empty-news-card"><div class="empty-news-title">아직 정리된 뉴스가 없습니다.</div><div class="empty-news-text">뉴스 기사를 분석한 내용을 <b>news</b> 시트에 추가하면 이곳에 카드로 표시됩니다.</div></div>';
+    }
+    return '<div class="news-compact-guide">최근 입력한 뉴스가 위에 보입니다. 목록에서는 뉴스 주제만 확인하고, 카드를 누르면 상세 분석이 열립니다.</div>'
+      + '<div class="news-compact-grid">' + entries.map((entry, displayIndex) => {
+        const c = TOPIC_COLORS[displayIndex % TOPIC_COLORS.length];
+        const title = newsTitleOnly(entry.row || {}, displayIndex + 1);
+        return `<div class="news-compact-card" onclick="openNewsDetail(${entry.originalIndex})" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+          <div class="news-compact-badge">${displayIndex + 1}</div>
+          <div class="news-topic-title">${escapeHtml(title)}</div>
+        </div>`;
+      }).join('') + '</div>';
+  };
+
+  window.openNews = function(){
+    showView('news');
+    const box = document.getElementById('newsContent');
+    if (box) box.innerHTML = renderNewsCards();
+    if (typeof setAppState === 'function') setAppState({ view:'news', newsIndex:'' });
+  };
+
+  window.openNewsDetail = function(index){
+    const rows = getNewsRows();
+    const r = rows[index];
+    if (!r) return openNews();
+    const displayIndex = Math.max(0, rows.length - 1 - Number(index));
+    const c = TOPIC_COLORS[displayIndex % TOPIC_COLORS.length];
+    const supports = [r.support1, r.support2, r.support3, r.support4, r.support5];
+    const title = newsTitleOnly(r, displayIndex + 1);
+    const box = document.getElementById('newsContent');
+    if (!box) return;
+    box.innerHTML = `
+      <div class="news-detail-actions"><button class="ghost" onclick="openNews()">← 뉴스 목록</button></div>
+      <div class="section-box news-detail-wrap" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]};border-color:${c[2]}">
+        <div class="news-detail-title">📰 주제: ${escapeHtml(title)}</div>
+        ${renderNewsBlock('기사 핵심', r.articleCore)}
+        ${newsKeywordBox(r)}
+        ${renderNewsBlock('실태분석', r.issue)}
+        ${renderNewsBlock('시사점', r.implication)}
+        ${renderNewsBlock('관련 충남 정책', r.policy)}
+        ${renderNewsBlock('서론', r.intro)}
+        <div class="news-support-grid">${supports.map((text, idx) => renderNewsBlock('지원방안 ' + (idx + 1), text)).join('')}</div>
+        ${renderNewsBlock('기대효과', r.effect)}
+      </div>`;
+    if (typeof setAppState === 'function') setAppState({ view:'news', newsIndex:String(index) });
+  };
+})();
+</script>
+
+
+
+<!-- === FINAL PATCH 2026-05-05: 뉴스 상세 상단 버튼 정리 === -->
+<style id="news-top-list-button-fix">
+  #news .top-mini-actions {
+    display:flex !important;
+    gap:8px !important;
+    align-items:center !important;
+    flex-wrap:wrap !important;
+  }
+  #news .news-top-list-btn {
+    background:#fff !important;
+    color:#6f6880 !important;
+    border:1px solid var(--line, #e8e1f5) !important;
+    box-shadow:none !important;
+  }
+  #news .news-detail-actions {
+    display:none !important;
+  }
+</style>
+<script id="news-top-list-button-fix-script">
+(function(){
+  function ensureNewsTopListButton(show){
+    const row = document.querySelector('#news .top-mini-actions');
+    if (!row) return;
+    let btn = row.querySelector('.news-top-list-btn');
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ghost news-top-list-btn';
+      btn.textContent = '← 뉴스 목록';
+      btn.onclick = function(){ openNews(); };
+      const homeBtn = row.querySelector('.home-back');
+      if (homeBtn && homeBtn.nextSibling) row.insertBefore(btn, homeBtn.nextSibling);
+      else row.appendChild(btn);
+    }
+    btn.style.display = show ? 'inline-flex' : 'none';
+  }
+
+  const oldOpenNews = window.openNews;
+  window.openNews = function(){
+    if (typeof oldOpenNews === 'function') oldOpenNews.apply(this, arguments);
+    ensureNewsTopListButton(false);
+  };
+
+  const oldOpenNewsDetail = window.openNewsDetail;
+  window.openNewsDetail = function(){
+    if (typeof oldOpenNewsDetail === 'function') oldOpenNewsDetail.apply(this, arguments);
+    ensureNewsTopListButton(true);
+  };
+
+  document.addEventListener('DOMContentLoaded', function(){ ensureNewsTopListButton(false); });
 })();
 </script>
 
