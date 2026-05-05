@@ -4825,5 +4825,57 @@ initApp();
 })();
 </script>
 
+
+
+<script>
+/* === FINAL PATCH 2026-05-05: 홈 3번째 줄 버튼 글자 크기 균일화 === */
+(function(){
+  const style = document.createElement('style');
+  style.id = 'home-nine-button-font-balance-final';
+  style.textContent = `
+    #home .home-actions > button,
+    #home .home-actions.home-actions-fixed > button {
+      font-size: 14.5px !important;
+      letter-spacing: -0.02em !important;
+      font-weight: 900 !important;
+    }
+    @media (max-width: 860px) {
+      #home .home-actions,
+      #home .home-actions.home-actions-fixed {
+        gap: 7px !important;
+      }
+      #home .home-actions > button,
+      #home .home-actions.home-actions-fixed > button,
+      #home .home-actions.home-actions-fixed > button:nth-child(7),
+      #home .home-actions.home-actions-fixed > button:nth-child(8),
+      #home .home-actions.home-actions-fixed > button:nth-child(9) {
+        height: 40px !important;
+        min-height: 40px !important;
+        max-height: 40px !important;
+        font-size: 13px !important;
+        padding: 6px 4px !important;
+        letter-spacing: -0.055em !important;
+        line-height: 1.05 !important;
+        white-space: nowrap !important;
+        font-weight: 900 !important;
+      }
+    }
+    @media (max-width: 420px) {
+      #home .home-actions > button,
+      #home .home-actions.home-actions-fixed > button,
+      #home .home-actions.home-actions-fixed > button:nth-child(7),
+      #home .home-actions.home-actions-fixed > button:nth-child(8),
+      #home .home-actions.home-actions-fixed > button:nth-child(9) {
+        font-size: 12.4px !important;
+        padding-left: 2px !important;
+        padding-right: 2px !important;
+        letter-spacing: -0.065em !important;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+})();
+</script>
+
 </body>
 </html>
