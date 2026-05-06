@@ -1387,7 +1387,7 @@
         <button class="soft-lavender home-action" onclick="openFuture2030()">🌈 2030 미래교육</button>
         <button class="soft-blue home-action" onclick="openNews()">📰 뉴스 현황</button>
         <button class="soft-lavender home-action" onclick="openInterview()">🎤 교감면접 주제</button>
-        <button class="soft-blue home-action" id="homeTodayMemoButton" onclick="toggleTodayMemo()">📝 오늘의 메모</button>
+        <button class="soft-blue home-action" onclick="openProcedures()">🧭 각종 절차</button>
         <button class="soft-lavender home-action" id="homeRememberButton" onclick="openRememberPage()">💭 기억할 것</button>
       </div>
     </div>
@@ -1523,6 +1523,19 @@
       <div class="sub">기사 핵심, 실태분석, 시사점, 관련 충남 정책, 지원방안을 암기용으로 정리합니다.</div>
     </div></div>
     <div id="newsContent"></div>
+  </div>
+
+
+  <div id="procedures" class="view">
+    <div class="top"><div>
+      <div class="top-mini-actions">
+        <button class="home-back" onclick="showView('home')">🏠 첫페이지</button>
+        <button class="list-back procedure-list-top" onclick="openProcedures()">↩ 절차 목록</button>
+      </div>
+      <h2>각종 절차</h2>
+      <div class="sub">교육활동 보호, 학교폭력 등 실무에서 정확히 써야 할 절차를 영역별로 확인합니다.</div>
+    </div></div>
+    <div id="procedureContent"></div>
   </div>
 
   <div id="interview" class="view">
@@ -4567,6 +4580,186 @@ async function initApp() {
       </div>`;
     if (typeof setAppState === 'function') setAppState({ view:'interview', interviewArea:r.area, interviewId:r.id });
   };
+})();
+
+
+
+/* === FINAL PATCH 2026-05-06: procedure 각종 절차 시트 추가 === */
+function normalizeProcedureRow(row) {
+  const v = (typeof rawRowVals === 'function' ? rawRowVals(row) : Object.values(row || {})).map(x => String(x == null ? '' : x).trim());
+  function hv(keys, fallback) { return String(getAny(row, keys, fallback || '') || '').trim(); }
+  return {
+    area: hv(['영역','area','category','분류'], v[0] || ''),
+    title: hv(['절차명','procedureName','procedure_name','title','제목'], v[1] || ''),
+    summary: hv(['절차요약','절차 요약','summary','요약'], v[2] || ''),
+    criteria: hv(['핵심조건_판단기준','핵심조건 판단기준','핵심조건','판단기준','criteria','condition'], v[3] || ''),
+    support: hv(['교육지원청_지원방안','교육지원청 지원방안','지원방안','support'], v[4] || ''),
+    answer: hv(['실전답안문장','실전 답안 문장','실전답안','answer'], v[5] || ''),
+    keywords: hv(['연계키워드','연계 키워드','키워드','keywords','keyword'], v[6] || ''),
+    source: hv(['출처메모','출처 메모','출처','source','memo'], v[7] || ''),
+    oneLine: hv(['한줄절차','한 줄 절차','oneLine','one_line'], v[8] || ''),
+    mustWords: hv(['무조건 넣을 단어','무조건넣을단어','필수단어','mustWords','must_words'], v[9] || '')
+  };
+}
+
+(function(){
+  const previousNormalizeData = window.normalizeData || normalizeData;
+  window.normalizeData = normalizeData = function(data) {
+    const db = previousNormalizeData ? previousNormalizeData(data || {}) : {};
+    const raw = (data && (data.procedure || data.Procedure || data.PROCEDURE || data['절차'] || data['각종절차'])) || [];
+    db.procedure = Array.isArray(raw) ? raw.map(normalizeProcedureRow).filter(r => r.area || r.title || r.summary) : [];
+    return db;
+  };
+
+  function procedureRows() {
+    return Array.isArray(DB && DB.procedure) ? DB.procedure : [];
+  }
+  function procedureColor(index) {
+    return TOPIC_COLORS[(index + 5) % TOPIC_COLORS.length] || TOPIC_COLORS[0];
+  }
+  function procedureKey(text) {
+    return encodeURIComponent(String(text || ''));
+  }
+  function splitProcedureKeywords(text) {
+    return String(text || '').split(/[,，;；\n\/|]+/).map(s => s.trim()).filter(Boolean);
+  }
+  function procedureAreaEntries() {
+    const groups = groupBy(procedureRows(), r => r.area || '기타');
+    return Object.entries(groups).sort((a,b)=>String(a[0]).localeCompare(String(b[0]), 'ko', {numeric:true}));
+  }
+  window.openProcedures = function() {
+    showView('procedures');
+    const content = document.getElementById('procedureContent');
+    const topListBtn = document.querySelector('#procedures .procedure-list-top');
+    if (topListBtn) topListBtn.style.display = 'none';
+    const entries = procedureAreaEntries();
+    if (!entries.length) {
+      content.innerHTML = '<div class="card procedure-empty">procedure 시트 자료가 아직 없습니다. 시트 이름과 헤더를 확인하세요.</div>';
+      if (typeof setAppState === 'function') setAppState({ view:'procedures', procedureArea:'', procedureTitle:'' });
+      return;
+    }
+    content.innerHTML = '<div class="procedure-area-grid">' + entries.map(([area, rows], index) => {
+      const c = procedureColor(index);
+      return `<button class="procedure-area-card" onclick="openProcedureArea('${procedureKey(area)}')" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+        <span class="procedure-area-name">${escapeHtml(area)}</span>
+        <span class="procedure-area-count">절차 ${rows.length}개</span>
+      </button>`;
+    }).join('') + '</div>';
+    if (typeof setAppState === 'function') setAppState({ view:'procedures', procedureArea:'', procedureTitle:'' });
+  };
+  window.openProcedureArea = function(areaEncoded) {
+    const area = decodeURIComponent(String(areaEncoded || ''));
+    showView('procedures');
+    const topListBtn = document.querySelector('#procedures .procedure-list-top');
+    if (topListBtn) topListBtn.style.display = 'inline-flex';
+    const rows = procedureRows().filter(r => String(r.area || '') === area);
+    const areaIndex = Math.max(0, procedureAreaEntries().findIndex(([a]) => a === area));
+    const c = procedureColor(areaIndex);
+    const content = document.getElementById('procedureContent');
+    content.innerHTML = `<div class="procedure-area-head" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+      <div class="small">영역</div><div class="procedure-area-title">${escapeHtml(area)}</div>
+      <div class="small">절차 카드를 누르면 실전답안용 문장과 필수 절차어를 확인할 수 있습니다.</div>
+    </div>
+    <div class="procedure-topic-grid">${rows.map((r, i) => {
+      const chips = splitProcedureKeywords(r.keywords).slice(0,4).map(k => `<span class="procedure-chip">${escapeHtml(k)}</span>`).join('');
+      return `<div class="procedure-topic-card" onclick="openProcedureDetail('${procedureKey(area)}','${procedureKey(r.title)}')" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+        <div class="procedure-topic-no">${i+1}</div>
+        <div class="procedure-topic-title">${escapeHtml(r.title || '절차')}</div>
+        ${r.oneLine ? `<div class="procedure-one-line">${escapeHtml(r.oneLine)}</div>` : ''}
+        ${chips ? `<div class="procedure-chip-row">${chips}</div>` : ''}
+      </div>`;
+    }).join('')}</div>`;
+    if (typeof setAppState === 'function') setAppState({ view:'procedures', procedureArea:area, procedureTitle:'' });
+  };
+  window.openProcedureDetail = function(areaEncoded, titleEncoded) {
+    const area = decodeURIComponent(String(areaEncoded || ''));
+    const title = decodeURIComponent(String(titleEncoded || ''));
+    showView('procedures');
+    const topListBtn = document.querySelector('#procedures .procedure-list-top');
+    if (topListBtn) topListBtn.style.display = 'inline-flex';
+    const rows = procedureRows().filter(r => String(r.area || '') === area);
+    const index = Math.max(0, rows.findIndex(r => String(r.title || '') === title));
+    const r = rows[index] || rows[0];
+    if (!r) return openProcedures();
+    const prev = rows[index - 1];
+    const next = rows[index + 1];
+    const areaIndex = Math.max(0, procedureAreaEntries().findIndex(([a]) => a === area));
+    const c = procedureColor(areaIndex);
+    const sections = [
+      ['절차요약', r.summary],
+      ['핵심조건·판단기준', r.criteria],
+      ['교육지원청 지원방안', r.support],
+      ['실전답안문장', r.answer],
+      ['한줄절차', r.oneLine],
+      ['무조건 넣을 단어', r.mustWords],
+      ['연계키워드', r.keywords],
+      ['출처메모', r.source]
+    ];
+    document.getElementById('procedureContent').innerHTML = `<div class="procedure-topline">
+      <button onclick="openProcedureArea('${procedureKey(area)}')">← 절차 목록</button>
+      ${prev ? `<button class="topic-nav-btn prev" onclick="openProcedureDetail('${procedureKey(area)}','${procedureKey(prev.title)}')">← 이전 절차</button>` : ''}
+      ${next ? `<button class="topic-nav-btn next" onclick="openProcedureDetail('${procedureKey(area)}','${procedureKey(next.title)}')">다음 절차 →</button>` : ''}
+    </div>
+    <div class="procedure-detail-head" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+      <div class="small">${escapeHtml(area)} · ${index + 1}</div>
+      <div class="procedure-detail-title">${escapeHtml(r.title || '')}</div>
+    </div>
+    <div class="procedure-section-grid" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+      ${sections.filter(([label, body]) => String(body || '').trim()).map(([label, body], sidx) => {
+        const isKey = label.includes('키워드') || label.includes('무조건');
+        const bodyHtml = isKey
+          ? `<div class="procedure-keywords">${splitProcedureKeywords(body).map(k => `<span class="procedure-chip">${escapeHtml(k)}</span>`).join('')}</div>`
+          : `<div class="procedure-section-body">${escapeHtml(body).replace(/\n/g,'<br>')}</div>`;
+        return `<div class="procedure-section procedure-section-${sidx+1}"><div class="procedure-section-title">${escapeHtml(label)}</div>${bodyHtml}</div>`;
+      }).join('')}
+    </div>`;
+    if (typeof setAppState === 'function') setAppState({ view:'procedures', procedureArea:area, procedureTitle:title });
+  };
+
+  const style = document.createElement('style');
+  style.id = 'procedure-page-style-final';
+  style.textContent = `
+    #procedures .top-mini-actions { display:flex !important; gap:8px !important; flex-wrap:wrap !important; }
+    #procedures .procedure-list-top { background:#fff !important; color:#6f6880 !important; border:1px solid var(--line,#e8e1f5) !important; box-shadow:none !important; }
+    .procedure-area-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:12px; }
+    .procedure-area-card { text-align:left !important; min-height:96px !important; display:flex !important; flex-direction:column !important; align-items:flex-start !important; justify-content:center !important; border:1px solid var(--topicLine) !important; background:linear-gradient(135deg,var(--topicSoft),#fff 75%) !important; color:var(--topic) !important; box-shadow:0 8px 20px rgba(65,56,110,.07) !important; }
+    .procedure-area-name { font-size:21px; font-weight:900; line-height:1.25; }
+    .procedure-area-count { margin-top:8px; font-size:14px; color:#6d6782; font-weight:800; }
+    .procedure-area-head, .procedure-detail-head { border:1px solid var(--topicLine); background:linear-gradient(135deg,var(--topicSoft),#fff 76%); border-radius:22px; padding:16px 18px; margin:12px 0; box-shadow:0 8px 20px rgba(65,56,110,.06); }
+    .procedure-area-title, .procedure-detail-title { font-size:23px; font-weight:900; color:var(--topic); line-height:1.25; word-break:keep-all; }
+    .procedure-topic-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:10px; }
+    .procedure-topic-card { cursor:pointer; border:1px solid var(--topicLine); border-radius:20px; padding:14px; background:linear-gradient(135deg,#fff,#f8fbff); box-shadow:0 7px 18px rgba(65,56,110,.06); transition:.16s transform,.16s box-shadow; }
+    .procedure-topic-card:hover { transform:translateY(-2px); box-shadow:0 12px 24px rgba(65,56,110,.11); }
+    .procedure-topic-no { display:inline-grid; place-items:center; width:30px; height:30px; border-radius:12px; color:#fff; background:var(--topic); font-weight:900; margin-bottom:8px; }
+    .procedure-topic-title { font-size:19px; font-weight:900; color:var(--topic); line-height:1.25; word-break:keep-all; }
+    .procedure-one-line { margin-top:7px; color:#5f5a75; font-size:15px; line-height:1.45; }
+    .procedure-chip-row, .procedure-keywords { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+    .procedure-chip { display:inline-flex; align-items:center; border-radius:999px; padding:5px 9px; background:var(--topicSoft); color:var(--topic); border:1px solid var(--topicLine); font-size:13px; font-weight:900; line-height:1.1; }
+    .procedure-topline { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; }
+    .procedure-topline button { background:linear-gradient(135deg,#fffaf1,#f2fbff) !important; color:#5b5674 !important; border:1px solid #e2dff4 !important; box-shadow:0 5px 12px rgba(65,56,110,.06) !important; }
+    .procedure-section-grid { display:grid; gap:10px; }
+    .procedure-section { border:1px solid var(--topicLine); border-radius:18px; padding:14px 16px; background:#fff; box-shadow:0 6px 16px rgba(65,56,110,.05); }
+    .procedure-section:nth-child(6n+1){background:linear-gradient(135deg,#fff,#f5fbff);} .procedure-section:nth-child(6n+2){background:linear-gradient(135deg,#fff,#fff8fb);} .procedure-section:nth-child(6n+3){background:linear-gradient(135deg,#fff,#f6fff9);} .procedure-section:nth-child(6n+4){background:linear-gradient(135deg,#fff,#fffdf2);} .procedure-section:nth-child(6n+5){background:linear-gradient(135deg,#fff,#f8f5ff);} .procedure-section:nth-child(6n+6){background:linear-gradient(135deg,#fff,#f3fffd);}
+    .procedure-section-title { display:inline-flex; padding:5px 10px; border-radius:999px; background:var(--topicSoft); border:1px solid var(--topicLine); color:var(--topic); font-size:15px; font-weight:900; margin-bottom:9px; }
+    .procedure-section-body { font-size:18px; line-height:1.65; word-break:keep-all; color:#19162c; }
+    .procedure-empty { color:#6d6782; }
+    @media (max-width:760px){ .procedure-area-grid,.procedure-topic-grid{grid-template-columns:1fr;} .procedure-area-title,.procedure-detail-title{font-size:20px;} .procedure-section-body{font-size:16px;line-height:1.58;} }
+  `;
+  document.head.appendChild(style);
+
+  // 상태 복구 보강
+  const previousRestoreLastAppState = window.restoreLastAppState;
+  if (typeof previousRestoreLastAppState === 'function') {
+    window.restoreLastAppState = function(){
+      const state = (typeof getAppState === 'function') ? getAppState() : {};
+      if (state && state.view === 'procedures') {
+        if (state.procedureArea && state.procedureTitle) return openProcedureDetail(encodeURIComponent(state.procedureArea), encodeURIComponent(state.procedureTitle));
+        if (state.procedureArea) return openProcedureArea(encodeURIComponent(state.procedureArea));
+        return openProcedures();
+      }
+      return previousRestoreLastAppState.apply(this, arguments);
+    };
+  }
 })();
 
 // 최종 초기화는 모든 보정 코드가 올라온 뒤 한 번만 실행합니다.
