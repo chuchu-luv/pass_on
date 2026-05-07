@@ -1388,6 +1388,7 @@
         <button class="soft-blue home-action" onclick="openNews()">📰 뉴스 현황</button>
         <button class="soft-lavender home-action" onclick="openInterview()">🎤 교감면접 주제</button>
         <button class="soft-blue home-action" onclick="openProcedures()">🧭 각종 절차</button>
+        <button class="soft-green home-action" onclick="openSupportSystems()">🧩 지역 지원체계</button>
         <button class="soft-lavender home-action" id="homeRememberButton" onclick="openRememberPage()">💭 기억할 것</button>
       </div>
     </div>
@@ -1536,6 +1537,18 @@
       <div class="sub">교육활동 보호, 학교폭력 등 실무에서 정확히 써야 할 절차를 영역별로 확인합니다.</div>
     </div></div>
     <div id="procedureContent"></div>
+  </div>
+
+  <div id="supportSystems" class="view">
+    <div class="top"><div>
+      <div class="top-mini-actions">
+        <button class="home-back" onclick="showView('home')">🏠 첫페이지</button>
+        <button class="list-back support-list-top" onclick="openSupportSystems()">↩ 영역 목록</button>
+      </div>
+      <h2>지역 지원체계</h2>
+      <div class="sub">지원단, 협의체, 위원회, 센터, 실무단 등 지원청 장학사가 알아야 할 지역 운영 조직을 확인합니다.</div>
+    </div></div>
+    <div id="supportSystemContent"></div>
   </div>
 
   <div id="interview" class="view">
@@ -4762,6 +4775,602 @@ function normalizeProcedureRow(row) {
   }
 })();
 
+/* === FINAL PATCH: 지역 지원체계 supportSystems 시트 추가 === */
+function normalizeSupportSystemRow(row) {
+  const v = (typeof rawRowVals === 'function' ? rawRowVals(row) : Object.values(row || {}))
+    .map(x => String(x == null ? '' : x).trim());
+
+  function hv(keys, fallback) {
+    return String(getAny(row, keys, fallback || '') || '').trim();
+  }
+
+  return {
+    area: hv(['영역','area','category','분류'], v[0] || ''),
+    name: hv(['조직명','name','organization','조직','명칭'], v[1] || ''),
+    type: hv(['조직유형','유형','type'], v[2] || ''),
+    unit: hv(['운영단위','운영 단위','unit','운영기관'], v[3] || ''),
+    officeRequired: hv(['지원청필수여부','지원청 필수 여부','지원청필수','required'], v[4] || ''),
+    regionalScope: hv(['지역아우름여부','지역 아우름 여부','지역아우름','regionalScope'], v[5] || ''),
+    role: hv(['핵심역할','핵심 역할','role','역할'], v[6] || ''),
+    point: hv(['장학사포인트','장학사 포인트','point','포인트'], v[7] || ''),
+    answer: hv(['실전답안문장','실전 답안 문장','answer','답안문장'], v[8] || ''),
+    keywords: hv(['암기키워드','키워드','keywords','keyword'], v[9] || ''),
+    source: hv(['출처메모','출처 메모','출처','source','memo'], v[10] || '')
+  };
+}
+
+(function(){
+  const previousNormalizeData = window.normalizeData || normalizeData;
+
+  window.normalizeData = normalizeData = function(data) {
+    const db = previousNormalizeData ? previousNormalizeData(data || {}) : {};
+    const raw = (data && (
+      data.supportSystems ||
+      data.SupportSystems ||
+      data.SUPPORTSYSTEMS ||
+      data['지역지원체계'] ||
+      data['지역 지원체계'] ||
+      data['지원체계']
+    )) || [];
+
+    db.supportSystems = Array.isArray(raw)
+      ? raw.map(normalizeSupportSystemRow).filter(r => r.area || r.name || r.role)
+      : [];
+
+    return db;
+  };
+
+  function supportRows() {
+    return Array.isArray(DB && DB.supportSystems) ? DB.supportSystems : [];
+  }
+
+  function supportColor(index) {
+    return TOPIC_COLORS[(index + 7) % TOPIC_COLORS.length] || TOPIC_COLORS[0];
+  }
+
+  function supportKey(text) {
+    return encodeURIComponent(String(text || ''));
+  }
+
+  function splitSupportKeywords(text) {
+    return String(text || '')
+      .split(/[,，;；\n\/|]+/)
+      .map(s => s.trim())
+      .filter(Boolean);
+  }
+
+  function supportAreaEntries() {
+    const groups = groupBy(supportRows(), r => r.area || '기타');
+    return Object.entries(groups).sort((a, b) =>
+      String(a[0]).localeCompare(String(b[0]), 'ko', { numeric: true })
+    );
+  }
+
+
+  function normalizeSupportNameForPick(text) {
+    return String(text || '').replace(/\s+/g, '').toLowerCase();
+  }
+
+  function coreSupportRows() {
+    const rows = supportRows();
+    const priorityNames = [
+      '시군 교육과정지원단',
+      '학교자율시간 자문상담지원단',
+      '학교자율시간 지역별 지원단',
+      '교육지원청별 지원장학 협의회',
+      '수업장학 지원단 네트워크',
+      '학생평가 현장지원단',
+      '지역별혁신학교협의체',
+      '마을기반 교육과정 현장지원단',
+      '충남 시군 학생회 연합회',
+      '지역별 학생자치활동 교사지원단',
+      '학교폭력통합지원센터',
+      '피해전담지원 관계회복지원단',
+      '학교폭력·아동학대 사안처리 현장지원단',
+      '지역교권보호위원회',
+      '학교민원대응지원팀',
+      '교육활동보호센터',
+      '지역교육지원청 위기지원팀',
+      '유보통합추진 지역실무협의체'
+    ];
+
+    const picked = [];
+    const used = new Set();
+
+    priorityNames.forEach(target => {
+      const targetKey = normalizeSupportNameForPick(target);
+      const found = rows.find(r => {
+        const nameKey = normalizeSupportNameForPick(r.name);
+        return nameKey === targetKey || nameKey.includes(targetKey) || targetKey.includes(nameKey);
+      });
+      if (found) {
+        const key = `${found.area}::${found.name}`;
+        if (!used.has(key)) {
+          used.add(key);
+          picked.push(found);
+        }
+      }
+    });
+
+    rows
+      .filter(r => String(r.officeRequired || '').includes('필수'))
+      .forEach(r => {
+        const key = `${r.area}::${r.name}`;
+        if (!used.has(key) && picked.length < 14) {
+          used.add(key);
+          picked.push(r);
+        }
+      });
+
+    return picked.slice(0, 14);
+  }
+
+  window.openSupportSystems = function() {
+    showView('supportSystems');
+
+    const content = document.getElementById('supportSystemContent');
+    const topListBtn = document.querySelector('#supportSystems .support-list-top');
+    if (topListBtn) topListBtn.style.display = 'none';
+
+    const entries = supportAreaEntries();
+
+    if (!entries.length) {
+      content.innerHTML = '<div class="card support-empty">supportSystems 시트 자료가 아직 없습니다. 시트 이름과 헤더를 확인하세요.</div>';
+      if (typeof setAppState === 'function') {
+        setAppState({ view:'supportSystems', supportArea:'', supportName:'' });
+      }
+      return;
+    }
+
+    const coreRows = coreSupportRows();
+    const coreHtml = coreRows.length ? `<div class="support-core-panel">
+      <div class="support-core-head">
+        <div>
+          <div class="support-core-title">⭐ 핵심 지원체계 한눈에</div>
+          <div class="support-core-sub">지원청 필수 조직과 지역을 아우르는 조직 중심으로 먼저 봅니다.</div>
+        </div>
+        <div class="support-core-count">핵심 ${coreRows.length}개</div>
+      </div>
+      <div class="support-core-grid">
+        ${coreRows.map((r, i) => {
+          const areaIndex = Math.max(0, entries.findIndex(([a]) => a === r.area));
+          const c = supportColor(areaIndex + i);
+          const summary = [r.unit, r.role].filter(Boolean).join(' · ');
+          return `<button class="support-core-card" onclick="openSupportSystemDetail('${supportKey(r.area)}','${supportKey(r.name)}')" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+            <span class="support-core-area">${escapeHtml(r.area || '기타')}</span>
+            <span class="support-core-name">${escapeHtml(r.name || '')}</span>
+            ${summary ? `<span class="support-core-summary">${escapeHtml(summary)}</span>` : ''}
+          </button>`;
+        }).join('')}
+      </div>
+    </div>` : '';
+
+    const areaHtml = '<div class="support-area-title-row">영역별 전체 목록</div><div class="support-area-grid">' + entries.map(([area, rows], index) => {
+      const c = supportColor(index);
+      const requiredCount = rows.filter(r => String(r.officeRequired || '').includes('필수')).length;
+
+      return `<button class="support-area-card" onclick="openSupportSystemArea('${supportKey(area)}')" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+        <span class="support-area-name">${escapeHtml(area)}</span>
+        <span class="support-area-count">조직 ${rows.length}개 · 지원청 필수 ${requiredCount}개</span>
+      </button>`;
+    }).join('') + '</div>';
+
+    content.innerHTML = coreHtml + areaHtml;
+
+    if (typeof setAppState === 'function') {
+      setAppState({ view:'supportSystems', supportArea:'', supportName:'' });
+    }
+  };
+
+  window.openSupportSystemArea = function(areaEncoded) {
+    const area = decodeURIComponent(String(areaEncoded || ''));
+
+    showView('supportSystems');
+
+    const topListBtn = document.querySelector('#supportSystems .support-list-top');
+    if (topListBtn) topListBtn.style.display = 'inline-flex';
+
+    const rows = supportRows().filter(r => String(r.area || '') === area);
+    const areaIndex = Math.max(0, supportAreaEntries().findIndex(([a]) => a === area));
+    const c = supportColor(areaIndex);
+    const content = document.getElementById('supportSystemContent');
+
+    content.innerHTML = `<div class="support-area-head" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+      <div class="small">영역</div>
+      <div class="support-area-title">${escapeHtml(area)}</div>
+      <div class="small">카드를 누르면 운영단위, 지원청 필수 여부, 실전답안문장을 확인할 수 있습니다.</div>
+    </div>
+    <div class="support-topic-grid">${rows.map((r, i) => {
+      const chips = [r.type, r.unit, r.officeRequired, r.regionalScope]
+        .filter(Boolean).slice(0, 4)
+        .map(k => `<span class="support-chip">${escapeHtml(k)}</span>`).join('');
+
+      return `<div class="support-topic-card" onclick="openSupportSystemDetail('${supportKey(area)}','${supportKey(r.name)}')" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+        <div class="support-topic-no">${i + 1}</div>
+        <div class="support-topic-title">${escapeHtml(r.name || '지원체계')}</div>
+        ${r.role ? `<div class="support-one-line">${escapeHtml(r.role)}</div>` : ''}
+        ${chips ? `<div class="support-chip-row">${chips}</div>` : ''}
+      </div>`;
+    }).join('')}</div>`;
+
+    if (typeof setAppState === 'function') {
+      setAppState({ view:'supportSystems', supportArea:area, supportName:'' });
+    }
+  };
+
+  window.openSupportSystemDetail = function(areaEncoded, nameEncoded) {
+    const area = decodeURIComponent(String(areaEncoded || ''));
+    const name = decodeURIComponent(String(nameEncoded || ''));
+
+    showView('supportSystems');
+
+    const topListBtn = document.querySelector('#supportSystems .support-list-top');
+    if (topListBtn) topListBtn.style.display = 'inline-flex';
+
+    const rows = supportRows().filter(r => String(r.area || '') === area);
+    const index = Math.max(0, rows.findIndex(r => String(r.name || '') === name));
+    const r = rows[index] || rows[0];
+
+    if (!r) return openSupportSystems();
+
+    const prev = rows[index - 1];
+    const next = rows[index + 1];
+
+    const areaIndex = Math.max(0, supportAreaEntries().findIndex(([a]) => a === area));
+    const c = supportColor(areaIndex);
+
+    const quickSummaryParts = [
+      r.unit ? `${r.unit} 운영` : '',
+      r.role || '',
+      r.point ? `장학사 포인트는 ${r.point}` : ''
+    ].filter(Boolean);
+
+    const sections = [
+      ['조직유형', r.type],
+      ['운영단위', r.unit],
+      ['지원청 필수 여부', r.officeRequired],
+      ['지역 아우름 여부', r.regionalScope],
+      ['핵심역할', r.role],
+      ['장학사 포인트', r.point],
+      ['실전답안문장', r.answer],
+      ['암기키워드', r.keywords],
+      ['출처메모', r.source]
+    ];
+
+    document.getElementById('supportSystemContent').innerHTML = `<div class="support-topline">
+      <button onclick="openSupportSystemArea('${supportKey(area)}')">← 조직 목록</button>
+      ${prev ? `<button class="topic-nav-btn prev" onclick="openSupportSystemDetail('${supportKey(area)}','${supportKey(prev.name)}')">← 이전 조직</button>` : ''}
+      ${next ? `<button class="topic-nav-btn next" onclick="openSupportSystemDetail('${supportKey(area)}','${supportKey(next.name)}')">다음 조직 →</button>` : ''}
+    </div>
+
+    <div class="support-detail-head" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+      <div class="small">${escapeHtml(area)} · ${index + 1}</div>
+      <div class="support-detail-title">${escapeHtml(r.name || '')}</div>
+      ${quickSummaryParts.length ? `<div class="support-glance-box"><div class="support-glance-label">한눈에 보기</div><div class="support-glance-text">${escapeHtml(quickSummaryParts.join(' · '))}</div></div>` : ''}
+    </div>
+
+    <div class="support-meta-inline" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+      ${r.type ? `<div class="support-meta-item"><span class="support-meta-label">조직유형</span><span class="support-meta-value">${escapeHtml(r.type)}</span></div>` : ''}
+      ${r.unit ? `<div class="support-meta-item"><span class="support-meta-label">운영단위</span><span class="support-meta-value">${escapeHtml(r.unit)}</span></div>` : ''}
+      ${r.officeRequired ? `<div class="support-meta-item"><span class="support-meta-label">지원청 필수</span><span class="support-meta-value">${escapeHtml(r.officeRequired)}</span></div>` : ''}
+      ${r.regionalScope ? `<div class="support-meta-item"><span class="support-meta-label">지역 아우름</span><span class="support-meta-value">${escapeHtml(r.regionalScope)}</span></div>` : ''}
+    </div>
+
+    <div class="support-section-grid" style="--topic:${c[0]};--topicSoft:${c[1]};--topicLine:${c[2]}">
+      ${sections
+        .filter(([label, body]) => String(body || '').trim())
+        .filter(([label]) => !['조직유형','운영단위','지원청 필수 여부','지역 아우름 여부'].includes(label))
+        .map(([label, body], sidx) => {
+          const isKeyword = label.includes('키워드');
+
+          const bodyHtml = isKeyword
+            ? `<div class="support-keywords">${splitSupportKeywords(body).map(k => `<span class="support-chip">${escapeHtml(k)}</span>`).join('')}</div>`
+            : `<div class="support-section-body">${escapeHtml(body).replace(/\n/g,'<br>')}</div>`;
+
+          return `<div class="support-section support-section-${sidx + 1}">
+            <div class="support-section-title">${escapeHtml(label)}</div>
+            ${bodyHtml}
+          </div>`;
+        }).join('')}
+    </div>`;
+
+    if (typeof setAppState === 'function') {
+      setAppState({ view:'supportSystems', supportArea:area, supportName:name });
+    }
+  };
+
+  const style = document.createElement('style');
+  style.id = 'support-systems-page-style-final';
+  style.textContent = `
+    #supportSystems .top-mini-actions { display:flex !important; gap:8px !important; flex-wrap:wrap !important; }
+    #supportSystems .support-list-top {
+      background:#fff !important;
+      color:#6f6880 !important;
+      border:1px solid var(--line,#e8e1f5) !important;
+      box-shadow:none !important;
+    }
+    .support-core-panel {
+      margin:12px 0 18px;
+      padding:16px;
+      border-radius:24px;
+      border:1px solid #e7dcff;
+      background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(248,245,255,.92));
+      box-shadow:0 10px 24px rgba(65,56,110,.08);
+    }
+    .support-core-head {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      margin-bottom:12px;
+    }
+    .support-core-title {
+      font-size:22px;
+      font-weight:900;
+      color:#453071;
+      line-height:1.25;
+    }
+    .support-core-sub {
+      margin-top:4px;
+      color:#706b83;
+      font-size:15px;
+      line-height:1.35;
+      word-break:keep-all;
+    }
+    .support-core-count {
+      flex:0 0 auto;
+      padding:7px 11px;
+      border-radius:999px;
+      background:#fff;
+      border:1px solid #e8e1f5;
+      color:#6f6880;
+      font-weight:900;
+      font-size:14px;
+    }
+    .support-core-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:9px;
+    }
+    .support-core-card {
+      text-align:left !important;
+      min-height:102px !important;
+      display:flex !important;
+      flex-direction:column !important;
+      align-items:flex-start !important;
+      justify-content:flex-start !important;
+      gap:5px !important;
+      padding:13px 14px !important;
+      border:1px solid var(--topicLine) !important;
+      background:linear-gradient(135deg,#fff,var(--topicSoft) 92%) !important;
+      color:#2a2541 !important;
+      box-shadow:0 6px 16px rgba(65,56,110,.06) !important;
+      border-radius:18px !important;
+    }
+    .support-core-area {
+      font-size:13px;
+      font-weight:900;
+      color:var(--topic);
+      line-height:1.2;
+    }
+    .support-core-name {
+      font-size:18px;
+      font-weight:900;
+      color:var(--topic);
+      line-height:1.25;
+      word-break:keep-all;
+    }
+    .support-core-summary {
+      font-size:14px;
+      line-height:1.38;
+      color:#5f5a75;
+      word-break:keep-all;
+      font-weight:800;
+    }
+    .support-area-title-row {
+      margin:12px 0 8px;
+      font-size:18px;
+      font-weight:900;
+      color:#453071;
+    }
+    .support-area-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+    .support-area-card {
+      text-align:left !important;
+      min-height:96px !important;
+      display:flex !important;
+      flex-direction:column !important;
+      align-items:flex-start !important;
+      justify-content:center !important;
+      border:1px solid var(--topicLine) !important;
+      background:linear-gradient(135deg,var(--topicSoft),#fff 75%) !important;
+      color:var(--topic) !important;
+      box-shadow:0 8px 20px rgba(65,56,110,.07) !important;
+    }
+    .support-area-name { font-size:21px; font-weight:900; line-height:1.25; }
+    .support-area-count { margin-top:8px; font-size:14px; color:#6d6782; font-weight:800; }
+    .support-area-head,
+    .support-detail-head {
+      border:1px solid var(--topicLine);
+      background:linear-gradient(135deg,var(--topicSoft),#fff 76%);
+      border-radius:22px;
+      padding:16px 18px;
+      margin:12px 0;
+      box-shadow:0 8px 20px rgba(65,56,110,.06);
+    }
+    .support-area-title,
+    .support-detail-title { font-size:23px; font-weight:900; color:var(--topic); line-height:1.25; word-break:keep-all; }
+    .support-topic-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:10px; }
+    .support-topic-card {
+      cursor:pointer;
+      border:1px solid var(--topicLine);
+      border-radius:20px;
+      padding:14px;
+      background:linear-gradient(135deg,#fff,#f8fbff);
+      box-shadow:0 7px 18px rgba(65,56,110,.06);
+      transition:.16s transform,.16s box-shadow;
+    }
+    .support-topic-card:hover { transform:translateY(-2px); box-shadow:0 12px 24px rgba(65,56,110,.11); }
+    .support-topic-no {
+      display:inline-grid;
+      place-items:center;
+      width:30px;
+      height:30px;
+      border-radius:12px;
+      color:#fff;
+      background:var(--topic);
+      font-weight:900;
+      margin-bottom:8px;
+    }
+    .support-topic-title { font-size:19px; font-weight:900; color:var(--topic); line-height:1.25; word-break:keep-all; }
+    .support-one-line { margin-top:7px; color:#5f5a75; font-size:15px; line-height:1.45; word-break:keep-all; }
+    .support-chip-row,
+    .support-keywords { display:flex; flex-wrap:wrap; gap:5px; margin-top:9px; }
+    .support-chip {
+      display:inline-flex;
+      align-items:center;
+      border-radius:999px;
+      padding:5px 9px;
+      background:var(--topicSoft);
+      color:var(--topic);
+      border:1px solid var(--topicLine);
+      font-size:13px;
+      font-weight:900;
+      line-height:1.1;
+    }
+    .support-topline { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; }
+    .support-topline button {
+      background:linear-gradient(135deg,#fffaf1,#f2fbff) !important;
+      color:#5b5674 !important;
+      border:1px solid #e2dff4 !important;
+      box-shadow:0 5px 12px rgba(65,56,110,.06) !important;
+    }
+    .support-glance-box {
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(255,255,255,.86);
+      border:1px solid var(--topicLine);
+    }
+    .support-glance-label {
+      display:inline-flex;
+      align-items:center;
+      padding:5px 10px;
+      border-radius:999px;
+      background:var(--topic);
+      color:#fff;
+      font-size:14px;
+      font-weight:900;
+      margin-bottom:8px;
+    }
+    .support-glance-text {
+      font-size:18px;
+      line-height:1.6;
+      color:#2b2543;
+      word-break:keep-all;
+      font-weight:800;
+    }
+    .support-meta-inline {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:10px;
+      margin:12px 0;
+    }
+    .support-meta-item {
+      border:1px solid var(--topicLine);
+      border-radius:16px;
+      padding:12px 14px;
+      background:#fff;
+      box-shadow:0 6px 14px rgba(65,56,110,.04);
+    }
+    .support-meta-label {
+      display:block;
+      font-size:14px;
+      color:#7f7897;
+      margin-bottom:6px;
+      font-weight:800;
+    }
+    .support-meta-value {
+      display:block;
+      font-size:18px;
+      color:#2a2541;
+      font-weight:900;
+      line-height:1.45;
+      word-break:keep-all;
+    }
+    .support-section-grid { display:grid; gap:10px; }
+    .support-section {
+      border:1px solid var(--topicLine);
+      border-radius:18px;
+      padding:14px 16px;
+      background:#fff;
+      box-shadow:0 6px 16px rgba(65,56,110,.05);
+    }
+    .support-section:nth-child(6n+1){background:linear-gradient(135deg,#fff,#f5fbff);}
+    .support-section:nth-child(6n+2){background:linear-gradient(135deg,#fff,#fff8fb);}
+    .support-section:nth-child(6n+3){background:linear-gradient(135deg,#fff,#f6fff9);}
+    .support-section:nth-child(6n+4){background:linear-gradient(135deg,#fff,#fffdf2);}
+    .support-section:nth-child(6n+5){background:linear-gradient(135deg,#fff,#f8f5ff);}
+    .support-section:nth-child(6n+6){background:linear-gradient(135deg,#fff,#f3fffd);}
+    .support-section-title {
+      display:inline-flex;
+      padding:5px 10px;
+      border-radius:999px;
+      background:var(--topicSoft);
+      border:1px solid var(--topicLine);
+      color:var(--topic);
+      font-size:15px;
+      font-weight:900;
+      margin-bottom:9px;
+    }
+    .support-section-body { font-size:18px; line-height:1.65; word-break:keep-all; color:#19162c; }
+    .support-empty { color:#6d6782; }
+    @media (max-width:760px){
+      .support-area-grid,
+      .support-topic-grid,
+      .support-core-grid,
+      .support-meta-inline { grid-template-columns:1fr; }
+      .support-core-head { display:block; }
+      .support-core-count { display:inline-flex; margin-top:8px; }
+      .support-area-title,
+      .support-detail-title { font-size:20px; }
+      .support-glance-text,
+      .support-meta-value,
+      .support-section-body { font-size:16px; line-height:1.58; }
+    }
+  `;
+  document.head.appendChild(style);
+
+  const previousRestoreLastAppState = window.restoreLastAppState;
+  if (typeof previousRestoreLastAppState === 'function') {
+    window.restoreLastAppState = function(){
+      const state = (typeof getAppState === 'function') ? getAppState() : {};
+
+      if (state && state.view === 'supportSystems') {
+        if (state.supportArea && state.supportName) {
+          return openSupportSystemDetail(
+            encodeURIComponent(state.supportArea),
+            encodeURIComponent(state.supportName)
+          );
+        }
+
+        if (state.supportArea) {
+          return openSupportSystemArea(encodeURIComponent(state.supportArea));
+        }
+
+        return openSupportSystems();
+      }
+
+      return previousRestoreLastAppState.apply(this, arguments);
+    };
+  }
+})();
+
+
 // 최종 초기화는 모든 보정 코드가 올라온 뒤 한 번만 실행합니다.
 initApp();
 </script>
@@ -5787,6 +6396,98 @@ initApp();
   document.addEventListener('DOMContentLoaded', function(){ ensureNewsTopListButton(false); });
 })();
 </script>
+
+
+
+<!-- === FINAL PATCH: 홈 버튼 파스텔 색상 구분 보정 === -->
+<style id="home-action-pastel-color-patch">
+  #home .home-actions.home-actions-fixed > button,
+  #home .home-actions > button {
+    border-width: 1.3px !important;
+    box-shadow: 0 7px 16px rgba(43, 37, 67, .055) !important;
+    font-weight: 900 !important;
+  }
+
+  /* 1 퀴즈 모드: 연보라 핑크 */
+  #home .home-actions.home-actions-fixed > button:nth-child(1),
+  #home .home-actions > button:nth-of-type(1) {
+    background: linear-gradient(135deg, #f8edff, #ead6ff) !important;
+    color: #8a54c7 !important;
+    border-color: #d7b6f3 !important;
+  }
+
+  /* 2 오답노트: 하늘 */
+  #home .home-actions.home-actions-fixed > button:nth-child(2),
+  #home .home-actions > button:nth-of-type(2) {
+    background: linear-gradient(135deg, #eef8ff, #d8ecff) !important;
+    color: #3c75b8 !important;
+    border-color: #bddcff !important;
+  }
+
+  /* 3 국정과제: 연두 */
+  #home .home-actions.home-actions-fixed > button:nth-child(3),
+  #home .home-actions > button:nth-of-type(3) {
+    background: linear-gradient(135deg, #f8ffec, #e5f7c8) !important;
+    color: #5e842f !important;
+    border-color: #cfe8a5 !important;
+  }
+
+  /* 4 주요업무계획: 민트 */
+  #home .home-actions.home-actions-fixed > button:nth-child(4),
+  #home .home-actions > button:nth-of-type(4) {
+    background: linear-gradient(135deg, #ecfff8, #d3f6ec) !important;
+    color: #2b806b !important;
+    border-color: #b5eadb !important;
+  }
+
+  /* 5 2030 미래교육: 라벤더 */
+  #home .home-actions.home-actions-fixed > button:nth-child(5),
+  #home .home-actions > button:nth-of-type(5) {
+    background: linear-gradient(135deg, #f5f0ff, #e2dcff) !important;
+    color: #6a58bd !important;
+    border-color: #cbc1f7 !important;
+  }
+
+  /* 6 뉴스 현황: 블루 */
+  #home .home-actions.home-actions-fixed > button:nth-child(6),
+  #home .home-actions > button:nth-of-type(6) {
+    background: linear-gradient(135deg, #edf6ff, #d5e8ff) !important;
+    color: #4776b2 !important;
+    border-color: #bad4f7 !important;
+  }
+
+  /* 7 교감면접 주제: 살구 */
+  #home .home-actions.home-actions-fixed > button:nth-child(7),
+  #home .home-actions > button:nth-of-type(7) {
+    background: linear-gradient(135deg, #fff6e9, #ffe2bd) !important;
+    color: #b06d1b !important;
+    border-color: #f4c990 !important;
+  }
+
+  /* 8 각종 절차: 연보라 회색 */
+  #home .home-actions.home-actions-fixed > button:nth-child(8),
+  #home .home-actions > button:nth-of-type(8) {
+    background: linear-gradient(135deg, #f6f3ff, #e7e1ff) !important;
+    color: #67579d !important;
+    border-color: #d2c8f0 !important;
+  }
+
+  /* 9 지역 지원체계: 연초록 */
+  #home .home-actions.home-actions-fixed > button:nth-child(9),
+  #home .home-actions > button:nth-of-type(9) {
+    background: linear-gradient(135deg, #f3ffea, #d9f4c8) !important;
+    color: #4f893d !important;
+    border-color: #bfe4ad !important;
+  }
+
+  /* 10 기억할 것: 벚꽃 핑크 */
+  #home .home-actions.home-actions-fixed > button:nth-child(10),
+  #home .home-actions > button:nth-of-type(10) {
+    background: linear-gradient(135deg, #fff0f7, #ffe0ed) !important;
+    color: #b35b82 !important;
+    border-color: #f3bfd5 !important;
+  }
+</style>
 
 </body>
 </html>
